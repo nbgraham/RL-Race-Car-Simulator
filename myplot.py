@@ -21,7 +21,7 @@ def plotAveragedRewards(agent, rewards, radius):
     plt.plot(range(len(averagedRewards)), averagedRewards)
     plt.xlabel('Episode')
     plt.ylabel('Reward Averaged over radius of {}'.format(radius))
-    plt.title('Reward per Episode for {} agent'.format(agent))
+    plt.title('Averaged Reward per Episode for {} agent'.format(agent))
 
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
