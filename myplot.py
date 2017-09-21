@@ -2,12 +2,13 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 def plotRewards(agent, rewards):
+    ax = plt.figure().gca()
+
     plt.plot(range(len(rewards)), rewards)
     plt.xlabel('Episode')
     plt.ylabel('Reward')
     plt.title('Reward per Episode for {} agent'.format(agent))
 
-    ax = plt.figure().gca()
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     plt.show()
@@ -15,12 +16,13 @@ def plotRewards(agent, rewards):
 def plotAveragedRewards(agent, rewards, radius):
     averagedRewards = calculateAveragedRewards(rewards, radius)
 
+    ax = plt.figure().gca()
+
     plt.plot(range(len(averagedRewards)), averagedRewards)
     plt.xlabel('Episode')
     plt.ylabel('Reward Averaged over radius of {}'.format(radius))
     plt.title('Reward per Episode for {} agent'.format(agent))
 
-    ax = plt.figure().gca()
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     plt.show()
