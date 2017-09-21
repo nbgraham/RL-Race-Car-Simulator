@@ -11,6 +11,7 @@ for i_episode in range(21):
     sum_reward = 0
     for t in range(1000):
         if render: env.render()
+        action = env.action_space.sample() # [steering, gas, brake]
         observation, reward, done, info = env.step(action)
         sum_reward += reward
         if(t%100 == 0): print(t)
