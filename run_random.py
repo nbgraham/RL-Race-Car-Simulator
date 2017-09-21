@@ -16,5 +16,8 @@ for i_episode in range(21):
             print("Episode {} finished after {} timesteps".format(i_episode, t+1))
             print("Reward: {}".format(sum_reward))
             rewards.append(sum_reward)
+        if done:
+            break;
 
+print (rewards)
 myplot.plotRewards("Random", rewards)
