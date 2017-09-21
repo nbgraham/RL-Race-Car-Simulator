@@ -1,6 +1,8 @@
 import gym
 import myplot
 
+render = False
+
 env = gym.make('CarRacing-v0')
 
 rewards=[]
@@ -8,7 +10,7 @@ for i_episode in range(21):
     observation = env.reset()
     sum_reward = 0
     for t in range(1000):
-        action = env.action_space.sample()
+        if render: env.render()
         observation, reward, done, info = env.step(action)
         sum_reward += reward
         if(t%100 == 0): print(t)
