@@ -38,3 +38,5 @@ def calculateAveragedRewards(rewards, radius):
         average = sum(selection)/len(selection)
         averagedRewards.append(average)
     return averagedRewards
+
+# randomAgentRewards = [-37.7,-31.6,-34.9,-22.4,-35.6,-31.9,-45.1,-23.1,-35.1,-23.4,-29.9,-30.6,-33.1,-30.1,-37.5,-38.1,-33.8,-33.9,-28.8,-35.8,-31.7]
