@@ -8,8 +8,8 @@ def plotRewards(agent, rewards):
     plt.title('Reward per Episode for {} agent'.format(agent))
 
     ax = plt.figure().gca()
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-    
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
     plt.show()
 
 def plotAveragedRewards(agent, rewards, radius):
@@ -21,7 +21,7 @@ def plotAveragedRewards(agent, rewards, radius):
     plt.title('Reward per Episode for {} agent'.format(agent))
 
     ax = plt.figure().gca()
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     plt.show()
 
