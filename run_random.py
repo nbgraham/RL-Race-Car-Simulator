@@ -3,11 +3,15 @@ import myplot
 import numpy as np
 
 render = False
-n_episodes=1
+n_episodes = 1
+action_time_steps = 5
 
 n_hidden = 500
 n_actions = 3
 dim = 96*96
+
+min_reward_per_frame = -0.1
+max_reward_per_frame = 10
 
 model = {}
 model['W1'] = np.random.randn(n_hidden, dim)
@@ -20,19 +24,22 @@ def main():
     for i_episode in range(n_episodes):
         observation = env.reset()
         sum_reward = 0
-        unique_pixels = []
+        interval_reward = 0
 
+        action = [0,0,0] # [steering, gas, brake]
         for t in range(1000):
             if render: env.render()
-            action = env.action_space.sample() # [steering, gas, brake]
+
+            if (t % action_time_steps == 0):
+                o = preproc(observation)
+                action = cnn(o)
+                interval_reward = 0
+
             observation, reward, done, info = env.step(action) # observation is 96x96x3
+
+            interval_reward += reward
             sum_reward += reward
 
-            if (t==233):
-                o = preproc(observation)
-                t = cnn(o)
-                print(t)
-                break
             if (t % 100 == 0):
                 print(t)
             if done or t==999:
@@ -78,9 +85,9 @@ def cnn(obs):
     one[one < 0] = 0 #ReLu non linearity
     two = np.dot(model['W2'], one)
 
-    two[0] = posNorm(two[0]) #brake
+    two[0] = posNegNorm(two[0]) #steering
     two[1] = posNorm(two[1]) #gas
-    two[2] = posNegNorm(two[2]) #steering
+    two[2] = posNorm(two[2]) #brake
     return two
 
 def posNorm(x):
