@@ -1,5 +1,6 @@
 import gym
 import numpy as np
+import json
 
 import myplot
 import preprocessing as pre
@@ -93,6 +94,9 @@ def main():
                 rewards.append(sum_reward)
             if done:
                 break;
+    f = open('rewards','w')
+    json.dump(rewards, f)
+    f.close()
 
     #print (rewards)
     #myplot.plotRewards("Random", rewards, 1)
