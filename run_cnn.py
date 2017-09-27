@@ -39,7 +39,7 @@ def main():
         error_list = []
 
         action = [0,0,0] # [steering, gas, brake]
-        for t in range(1000):
+        for t in range(max_time_steps):
             if render: env.render()
 
             if t> 0 and (t % action_time_steps == 0):
@@ -90,12 +90,13 @@ def main():
             interval_reward += reward
             sum_reward += reward
 
-            if done or t==999:
+            if done or t==max_time_steps-1:
                 print("Episode {} finished after {} timesteps".format(i_episode, t+1))
                 print("Reward: {}".format(sum_reward))
                 rewards.append(sum_reward)
             if done:
-                break;
+                break
+
     f = open('rewards','w')
     json.dump(rewards, f)
     f.close()
