@@ -8,6 +8,18 @@ def focus_middle(observation):
 
     return focused_middle
 
+
+def coarse(observation):
+    car_road_gray = cropped_grayscale_car_road(observation)
+    coarse = rebin(car_road_gray, (9,9))
+    return coarse
+
+
+def fine_car(observation):
+    car_road_gray = cropped_grayscale_car_road(observation)
+    return car_road_gray[54:81,27:54]
+
+
 def focus_car(observation):
     car_road_gray = cropped_grayscale_car_road(observation)
     coarse = rebin(car_road_gray, (9,9))
