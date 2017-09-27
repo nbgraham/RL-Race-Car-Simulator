@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
-import numpy as np
 
 def plotRewards(agent, rewards, radius):
     averagedRewards = calculateAveragedRewards(rewards, radius)
@@ -32,41 +31,8 @@ def calculateAveragedRewards(rewards, radius):
 
 
 def show_rgb(array):
-    gray = rgb2gray(array)
-
-    car_road_gray = just_car_road(gray)
-
-    plt.imshow(car_road_gray, interpolation='nearest')
+    plt.imshow(array, interpolation='nearest')
     plt.show()
-
-
-def just_car_road(gray):
-    gray[gray<60] = 0
-    gray[btw(gray,60,63)] = -61
-    gray[btw(gray,63,100)] = 0
-    gray[btw(gray,100,120)] = -100
-    gray[gray>=120] = 0
-
-    gray[gray==-61]=255
-    gray[gray==-100]=127
-
-    return gray
-
-
-def btw(x,a,b):
-    lower = a<=x
-    upper = x<b
-    combined = lower * upper
-    return combined
-
-
-def rgb2gray(rgb):
-    return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
-
-
-def rebin(a, shape):
-    sh = shape[0],a.shape[0]//shape[0],shape[1],a.shape[1]//shape[1]
-    return a.reshape(sh).mean(-1).mean(1)
 
 # randomAgentRewards = [-37.7,-31.6,-34.9,-22.4,-35.6,-31.9,-45.1,-23.1,-35.1,-23.4,-29.9,-30.6,-33.1,-30.1,-37.5,-38.1,-33.8,-33.9,-28.8,-35.8,-31.7]
 # plotRewards("Random", randomAgentRewards, 2)
