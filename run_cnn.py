@@ -2,7 +2,7 @@ import gym
 import myplot
 import numpy as np
 
-render = False
+render = True # Does't work if false, observations are wrong
 n_episodes = 1
 action_time_steps = 5
 batch_size = 10
