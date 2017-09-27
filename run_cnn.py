@@ -73,6 +73,7 @@ def main():
                     l2_list = []
                     error_list = []
 
+                interval_reward = 0
                 action[0] = 2*action[0] - 1 # scale steering from [0,1] to [-1,1]
 
 
@@ -81,8 +82,6 @@ def main():
             interval_reward += reward
             sum_reward += reward
 
-            if (t % 100 == 0):
-                print("Time step:", t)
             if done or t==999:
                 print("Episode {} finished after {} timesteps".format(i_episode, t+1))
                 print("Reward: {}".format(sum_reward))
