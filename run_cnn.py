@@ -11,7 +11,7 @@ batch_size = 10
 
 target_reward_per_frame = 1
 
-n_hidden = 5
+n_hidden = 4
 n_actions = 3
 dim = 9 # size of list returned from preprocessing
 
@@ -39,7 +39,7 @@ def main():
         for t in range(1000):
             if render: env.render()
 
-            if (t % action_time_steps == 0):
+            if t> 0 and (t % action_time_steps == 0):
                 obs = pre.coarse(observation).ravel()/255
                 l2, hidden_layer = forward(obs)
 
@@ -53,7 +53,7 @@ def main():
 
                 if t % (batch_size * action_time_steps) == 0:
                     print("Time step:", t)
-                    print("Action: ", action)
+                    print("Action: ", l2)
                     print("Error:",  err)
 
                     l0_array = np.vstack(l0_list)
