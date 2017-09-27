@@ -11,7 +11,7 @@ n_hidden = 500
 n_actions = 3
 dim = 96*96
 
-np.random.seed(685)
+np.random.seed(35)
 model = {}
 # initialize [-1,1] with mean 0
 model['W1'] = 2 * np.random.random((dim, n_hidden)) - 1
@@ -47,8 +47,6 @@ def main():
                 l2_list.append(action)
                 error_list.append(err)
 
-                action[0] = 2*action[0] - 1 # scale steering from [0,1] to [-1,1]
-
                 #Reset
                 interval_reward = 0
                 if t % (batch_size * action_time_steps) == 0:
@@ -71,6 +69,9 @@ def main():
                     l1_list = []
                     l2_list = []
                     error_list = []
+
+                action[0] = 2*action[0] - 1 # scale steering from [0,1] to [-1,1]
+
 
             observation, reward, done, info = env.step(action) # observation is 96x96x3
 
