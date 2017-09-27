@@ -11,9 +11,9 @@ batch_size = 10
 
 target_reward_per_frame = 1
 
-n_hidden = 500
+n_hidden = 5
 n_actions = 3
-dim = 801 # size of list returned from preprocessing
+dim = 9 # size of list returned from preprocessing
 
 np.random.seed(35)
 model = {}
