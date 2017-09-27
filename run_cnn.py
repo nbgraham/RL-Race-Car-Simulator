@@ -7,7 +7,7 @@ import preprocessing as pre
 
 render = True # Does't work if false, observations are wrong
 
-n_episodes = 10
+n_episodes = 100
 max_time_steps = 2000
 action_time_steps = 5
 batch_size = 10
@@ -37,8 +37,8 @@ def main():
         l1_list = []
         l2_list = []
         error_list = []
-
         action = [0,0,0] # [steering, gas, brake]
+
         for t in range(max_time_steps):
             if render: env.render()
 
