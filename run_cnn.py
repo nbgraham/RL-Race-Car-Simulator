@@ -77,6 +77,9 @@ def main():
 
             interval_reward += reward
             sum_reward += reward
+            if t%10==0:
+                cropped = observation[:82, 7:89]
+                myplot.show_rgb(cropped)
 
             if (t % 100 == 0):
                 print(t)
