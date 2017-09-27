@@ -5,6 +5,7 @@ import numpy as np
 render = False
 n_episodes = 1
 action_time_steps = 5
+batch_size = 10
 
 n_hidden = 500
 n_actions = 3
@@ -23,6 +24,11 @@ def main():
         sum_reward = 0
         interval_reward = 0
 
+        l0_list = []
+        l1_list = []
+        l2_list = []
+        error_list = []
+
         action = [0,0,0] # [steering, gas, brake]
         for t in range(1000):
             if render: env.render()
@@ -30,15 +36,23 @@ def main():
             if (t % action_time_steps == 0):
                 print("Time step:")
                 obs = preproc(observation)
-                predictions, hidden_layer = cnn(obs)
-                print(action)
-                print(interval_reward)
+                action, hidden_layer = cnn(obs)
                 reward_per_time_step = interval_reward/action_time_steps
                 err = error(reward_per_time_step)
-                print(err)
-                derivatives = backpropagate(obs,hidden_layer,predictions)
-                print(derivatives)
+
+                l0_list.append(obs)
+                l1_list.append(hidden_layer)
+                l2_list.append(action)
+                error_list.append(err)
+
+                #Reset
                 interval_reward = 0
+                if t % (batch_size * action_time_steps) == 0:
+                    derivatives = backpropagate(obs,hidden_layer,predictions)
+                    l0_list = []
+                    l1_list = []
+                    l2_list = []
+                    error_list = []
 
             observation, reward, done, info = env.step(action) # observation is 96x96x3
 
