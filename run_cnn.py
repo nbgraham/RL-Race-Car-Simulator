@@ -45,13 +45,15 @@ def main():
                 l0_list.append(obs)
                 l1_list.append(hidden_layer)
                 l2_list.append(action)
-                error_list.append([err,err,err])
+                error_list.append(err)
 
                 action[0] = 2*action[0] - 1 # scale steering from [0,1] to [-1,1]
 
                 #Reset
                 interval_reward = 0
                 if t % (batch_size * action_time_steps) == 0:
+                    print(action)
+                    print(err)
                     l0_array = np.vstack(l0_list)
                     l1_array = np.vstack(l1_list)
                     l2_array = np.vstack(l2_list)
@@ -160,7 +162,9 @@ def sigmoidDeriv(x):
     return x*(1-x)
 
 def error(avg_reward):
-    return 1.0/(avg_reward + 1) - 1.0/9.0
+    badness = 1.0/(avg_reward + 1) - 1.0/9.0 # [0,1]
+    random_bit = np.random.choice([1,-1])
+    return np.full((1,3),random_bit*badness/2.0)
 
 if __name__ == "__main__":
     main()
