@@ -37,7 +37,7 @@ def main():
 
             if (t % action_time_steps == 0):
                 obs = preproc(observation)
-                action, hidden_layer = cnn(obs)
+                action, hidden_layer = forward(obs)
 
                 reward_per_time_step = interval_reward/action_time_steps
                 err = error(reward_per_time_step, action)
@@ -141,19 +141,11 @@ def preproc(obs):
     b = np.array(new_list)
     return b
 
-def cnn(l0):
+def forward(l0):
     l1 = sigmoid(np.dot(l0, model['W1']))
     l2 = sigmoid(np.dot(l1, model['W2']))
 
     return l2, l1
-
-def backpropagate(observations, intermediate_layer, predictions):
-  """ backward pass. (eph is array of intermediate hidden states) """
-  dW2 = np.dot(intermediate_layer, predictions).ravel()
-  dh = np.outer(predictions, model['W2'])
-  dh[intermediate_layer <= 0] = 0 # backpropagate relu non-linearity
-  dW1 = np.dot(dh.T, observations)
-  return {'W1':dW1, 'W2':dW2}
 
 def sigmoid(x):
     return 1.0 / (1.0 + np.exp(-x)) # sigmoid squashing
