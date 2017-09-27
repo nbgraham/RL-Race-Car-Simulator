@@ -51,9 +51,8 @@ def main():
                 l2_list.append(action)
                 error_list.append(err)
 
-                #Reset
-                interval_reward = 0
                 if t % (batch_size * action_time_steps) == 0:
+                    print("Time step:", t)
                     print("Action: ", action)
                     print("Error:",  err)
 
