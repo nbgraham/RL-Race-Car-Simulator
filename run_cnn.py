@@ -7,8 +7,8 @@ import preprocessing as pre
 
 render = True # Does't work if false, observations are wrong
 
-n_episodes = 1
-max_time_steps = 1000
+n_episodes = 10
+max_time_steps = 2000
 action_time_steps = 5
 batch_size = 10
 
@@ -18,9 +18,9 @@ n_hidden = 4
 n_actions = 3
 dim = 81 # size of list returned from preprocessing
 
+# initialize model [-1,1] with mean 0
 np.random.seed(35)
 model = {}
-# initialize [-1,1] with mean 0
 model['W1'] = 2 * np.random.random((dim, n_hidden)) - 1
 model['W2'] = 2 * np.random.random((n_hidden, n_actions)) - 1
 
@@ -101,8 +101,7 @@ def main():
     json.dump(rewards, f)
     f.close()
 
-    #print (rewards)
-    #myplot.plotRewards("Random", rewards, 1)
+    myplot.plotRewards("Random", rewards, 1)
 
 def forward(l0):
     l1 = sigmoid(np.dot(l0, model['W1']))
