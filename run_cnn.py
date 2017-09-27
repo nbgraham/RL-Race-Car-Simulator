@@ -140,11 +140,10 @@ def preproc(obs):
     return b
 
 def cnn(l0):
-    l1 = np.dot(l0, model['W1'])
-    l1[l1 < 0] = 0 #ReLu non linearity
-    l2 = np.dot(l1, model['W2'])
+    l1 = sigmoid(np.dot(l0, model['W1']))
+    l2 = sigmoid(np.dot(l1, model['W2']))
 
-    return sigmoid(l2), l1
+    return l2, l1
 
 def backpropagate(observations, intermediate_layer, predictions):
   """ backward pass. (eph is array of intermediate hidden states) """
