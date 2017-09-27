@@ -16,7 +16,7 @@ target_reward_per_frame = 1
 
 n_hidden = 4
 n_actions = 3
-dim = 9 # size of list returned from preprocessing
+dim = 81 # size of list returned from preprocessing
 
 np.random.seed(35)
 model = {}
