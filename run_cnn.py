@@ -11,7 +11,7 @@ batch_size = 10
 
 n_hidden = 500
 n_actions = 3
-dim = 96*96
+dim = 801 # size of list returned from preprocessing
 
 np.random.seed(35)
 model = {}
@@ -39,6 +39,7 @@ def main():
 
             if (t % action_time_steps == 0):
                 obs = pre.focus_car(observation)
+                print(obs.shape)
                 action, hidden_layer = forward(obs)
 
                 reward_per_time_step = interval_reward/action_time_steps
