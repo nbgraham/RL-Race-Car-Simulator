@@ -11,8 +11,8 @@ n_actions = 3
 dim = 96*96
 
 model = {}
-model['W1'] = np.random.randn(n_hidden, dim)
-model['W2'] = np.random.randn(n_actions, n_hidden)
+model['W1'] = np.random.randn(dim, n_hidden)
+model['W2'] = np.random.randn(n_hidden, n_actions)
 
 def main():
     env = gym.make('CarRacing-v0')
@@ -28,13 +28,16 @@ def main():
             if render: env.render()
 
             if (t % action_time_steps == 0):
-                o = preproc(observation)
-                action = cnn(o)
+                print("Time step:")
+                obs = preproc(observation)
+                predictions, hidden_layer = cnn(obs)
                 print(action)
                 print(interval_reward)
                 reward_per_time_step = interval_reward/action_time_steps
                 err = error(reward_per_time_step)
                 print(err)
+                derivatives = backpropagate(obs,hidden_layer,predictions)
+                print(derivatives)
                 interval_reward = 0
 
             observation, reward, done, info = env.step(action) # observation is 96x96x3
@@ -63,7 +66,6 @@ def preproc(obs):
     grey2 = np.array([105,105,105])
     grey3 = np.array([102,102,102])
 
-
     new_list = []
     for col in obs:
       for i in range(len(col)):
@@ -86,15 +88,23 @@ def preproc(obs):
     b = np.array(new_list)
     return b
 
-def cnn(obs):
-    one = np.dot(model['W1'], obs)
-    one[one < 0] = 0 #ReLu non linearity
-    two = np.dot(model['W2'], one)
+def cnn(l0):
+    l1 = np.dot(l0, model['W1'])
+    l1[l1 < 0] = 0 #ReLu non linearity
+    l2 = np.dot(l1, model['W2'])
 
-    two[0] = posNegNorm(two[0]) #steering
-    two[1] = posNorm(two[1]) #gas
-    two[2] = posNorm(two[2]) #brake
-    return two
+    l2[0] = posNegNorm(l2[0]) #steering
+    l2[1] = posNorm(l2[1]) #gas
+    l2[2] = posNorm(l2[2]) #brake
+    return l2, l1
+
+def backpropagate(observations, intermediate_layer, predictions):
+  """ backward pass. (eph is array of intermediate hidden states) """
+  dW2 = np.dot(intermediate_layer, predictions).ravel()
+  dh = np.outer(predictions, model['W2'])
+  dh[intermediate_layer <= 0] = 0 # backpropagate relu non-linearity
+  dW1 = np.dot(dh.T, observations)
+  return {'W1':dW1, 'W2':dW2}
 
 def posNorm(x):
     return 1.0 / (1.0 + np.exp(-x)) # sigmoid squashing
