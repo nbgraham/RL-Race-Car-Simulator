@@ -125,15 +125,15 @@ def preproc(obs):
         if np.array_equal(col[i], black):
             new_list.append(1)
         elif np.array_equal(col[i], green):
-            new_list.append(2)
+            new_list.append(-1)
         elif np.array_equal(col[i], light_green):
-            new_list.append(2.1)
+            new_list.append(-1.1)
         elif np.array_equal(col[i], grey1):
-            new_list.append(2.9)
+            new_list.append(2)
         elif np.array_equal(col[i], grey2):
-            new_list.append(3)
+            new_list.append(2.1)
         elif np.array_equal(col[i], grey3):
-            new_list.append(3.1)
+            new_list.append(1.9)
         else:
             print("Unexpected pixel: ", col[i])
             new_list.append(3)
