@@ -40,7 +40,7 @@ def main():
             if render: env.render()
 
             if (t % action_time_steps == 0):
-                obs = pre.focus_car(observation)
+                obs = pre.coarse(observation).ravel()/255
                 action, hidden_layer = forward(obs)
 
                 reward_per_time_step = interval_reward/action_time_steps
