@@ -11,7 +11,7 @@ n_hidden = 500
 n_actions = 3
 dim = 96*96
 
-np.random.seed(3351)
+np.random.seed(685)
 model = {}
 # initialize [-1,1] with mean 0
 model['W1'] = 2 * np.random.random((dim, n_hidden)) - 1
@@ -52,8 +52,9 @@ def main():
                 #Reset
                 interval_reward = 0
                 if t % (batch_size * action_time_steps) == 0:
-                    print(action)
-                    print(err)
+                    print("Action: ", action)
+                    print("Error:",  err)
+
                     l0_array = np.vstack(l0_list)
                     l1_array = np.vstack(l1_list)
                     l2_array = np.vstack(l2_list)
