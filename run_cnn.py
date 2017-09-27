@@ -108,7 +108,7 @@ def sigmoidDeriv(x):
     return x*(1-x)
 
 def error(avg_reward, action):
-    badness = 1.0/(avg_reward + 1) - 1.0/9.0 # [0,1]
+    badness = (target_reward_per_frame - avg_reward)/1.1
     random_bit = np.random.choice([1,-1])
     dev = np.random.random()*badness/2.0
     change = random_bit*dev
