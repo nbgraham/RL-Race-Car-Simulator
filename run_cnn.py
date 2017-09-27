@@ -6,7 +6,9 @@ import myplot
 import preprocessing as pre
 
 render = True # Does't work if false, observations are wrong
+
 n_episodes = 1
+max_time_steps = 1000
 action_time_steps = 5
 batch_size = 10
 
