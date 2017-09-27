@@ -8,6 +8,19 @@ def focus_middle(observation):
 
     return focused_middle
 
+def focus_car(observation):
+    car_road_gray = cropped_grayscale_car_road(observation)/255
+    coarse = rebin(car_road_gray, (9,9))
+
+    # remove focused area
+    coarse[6:9,3:6] = -1
+    coarse_list = coarse[coarse>=0].ravel()
+
+    fine_list = car_road_gray[54:81,27:54].ravel()
+
+    return np.hstack([coarse_list, fine_list])
+
+
 def cropped_grayscale_car_road(observation):
     cropped = observation[:81, 8:89]
     gray = rgb2gray(cropped)
