@@ -39,7 +39,6 @@ def main():
 
             if (t % action_time_steps == 0):
                 obs = pre.focus_car(observation)
-                print(obs.shape)
                 action, hidden_layer = forward(obs)
 
                 reward_per_time_step = interval_reward/action_time_steps
@@ -80,12 +79,9 @@ def main():
 
             interval_reward += reward
             sum_reward += reward
-            if t%10==0:
-                cropped = observation[:82, 7:89]
-                myplot.show_rgb(cropped)
 
             if (t % 100 == 0):
-                print(t)
+                print("Time step:", t)
             if done or t==999:
                 print("Episode {} finished after {} timesteps".format(i_episode, t+1))
                 print("Reward: {}".format(sum_reward))
