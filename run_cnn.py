@@ -40,7 +40,7 @@ def main():
                 action, hidden_layer = cnn(obs)
 
                 reward_per_time_step = interval_reward/action_time_steps
-                err = error(reward_per_time_step)
+                err = error(reward_per_time_step, action)
 
                 l0_list.append(obs)
                 l1_list.append(hidden_layer)
@@ -161,10 +161,14 @@ def sigmoidDeriv(x):
     #assuming x is a result sigmoid(y)
     return x*(1-x)
 
-def error(avg_reward):
+def error(avg_reward, action):
     badness = 1.0/(avg_reward + 1) - 1.0/9.0 # [0,1]
     random_bit = np.random.choice([1,-1])
-    return np.full((1,3),random_bit*badness/2.0)
+    dev = np.random.random()*badness/2.0
+    change = random_bit*dev
+    new_action = action + change
+    new_action = new_action % 1.0
+    return new_action - action
 
 if __name__ == "__main__":
     main()
