@@ -41,14 +41,14 @@ def main():
 
             if (t % action_time_steps == 0):
                 obs = pre.coarse(observation).ravel()/255
-                action, hidden_layer = forward(obs)
+                l2, hidden_layer = forward(obs)
 
                 reward_per_time_step = interval_reward/action_time_steps
-                err = error(reward_per_time_step, action)
+                err = error(reward_per_time_step, l2)
 
                 l0_list.append(obs)
                 l1_list.append(hidden_layer)
-                l2_list.append(action)
+                l2_list.append(l2)
                 error_list.append(err)
 
                 if t % (batch_size * action_time_steps) == 0:
@@ -74,6 +74,11 @@ def main():
                     error_list = []
 
                 interval_reward = 0
+
+                #copy l2 so we can modify it
+                action = np.empty_like(l2)
+                action[:] = l2
+
                 action[0] = 2*action[0] - 1 # scale steering from [0,1] to [-1,1]
 
 
