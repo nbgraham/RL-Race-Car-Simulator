@@ -12,7 +12,7 @@ max_time_steps = 2000
 action_time_steps = 5
 batch_size = 10
 
-target_reward_per_frame = 1
+target_reward_per_frame = 1.5
 
 n_hidden = 4
 n_actions = 3
