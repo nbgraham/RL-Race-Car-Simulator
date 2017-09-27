@@ -35,21 +35,34 @@ def main():
             if render: env.render()
 
             if (t % action_time_steps == 0):
-                print("Time step:")
                 obs = preproc(observation)
                 action, hidden_layer = cnn(obs)
+
                 reward_per_time_step = interval_reward/action_time_steps
                 err = error(reward_per_time_step)
 
                 l0_list.append(obs)
                 l1_list.append(hidden_layer)
                 l2_list.append(action)
-                error_list.append(err)
+                error_list.append([err,err,err])
+
+                action[0] = 2*action[0] - 1 # scale steering from [0,1] to [-1,1]
 
                 #Reset
                 interval_reward = 0
                 if t % (batch_size * action_time_steps) == 0:
-                    derivatives = backpropagate(obs,hidden_layer,predictions)
+                    l0_array = np.vstack(l0_list)
+                    l1_array = np.vstack(l1_list)
+                    l2_array = np.vstack(l2_list)
+                    error_array = np.vstack(error_list)
+
+                    l2_delta = error_array * sigmoidDeriv(l2_array)
+                    l1_error = l2_delta.dot(model['W2'].T)
+                    l1_delta = l1_error * sigmoidDeriv(l1_array)
+
+                    model['W2'] += l1_array.T.dot(l2_delta)
+                    model['W1'] += l0_array.T.dot(l1_delta)
+
                     l0_list = []
                     l1_list = []
                     l2_list = []
@@ -128,10 +141,7 @@ def cnn(l0):
     l1[l1 < 0] = 0 #ReLu non linearity
     l2 = np.dot(l1, model['W2'])
 
-    l2[0] = posNegNorm(l2[0]) #steering
-    l2[1] = posNorm(l2[1]) #gas
-    l2[2] = posNorm(l2[2]) #brake
-    return l2, l1
+    return sigmoid(l2), l1
 
 def backpropagate(observations, intermediate_layer, predictions):
   """ backward pass. (eph is array of intermediate hidden states) """
@@ -141,11 +151,12 @@ def backpropagate(observations, intermediate_layer, predictions):
   dW1 = np.dot(dh.T, observations)
   return {'W1':dW1, 'W2':dW2}
 
-def posNorm(x):
+def sigmoid(x):
     return 1.0 / (1.0 + np.exp(-x)) # sigmoid squashing
 
-def posNegNorm(x):
-    return 2.0 / (1.0 + np.exp(-x)) - 1.0 # sigmoid squashing
+def sigmoidDeriv(x):
+    #assuming x is a result sigmoid(y)
+    return x*(1-x)
 
 def error(avg_reward):
     return 1.0/(avg_reward + 1) - 1.0/9.0
