@@ -11,6 +11,7 @@ n_hidden = 500
 n_actions = 3
 dim = 96*96
 
+np.random.seed(3351)
 model = {}
 # initialize [-1,1] with mean 0
 model['W1'] = 2 * np.random.random((dim, n_hidden)) - 1
