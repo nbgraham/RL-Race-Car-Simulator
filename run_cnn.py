@@ -66,6 +66,26 @@ def preproc(obs):
     grey2 = np.array([105,105,105])
     grey3 = np.array([102,102,102])
 
+    #new things (from unexpected pixels)
+    #not sure how to append them to the new list
+    red = np.array([255,0,0])
+    red2 = np.array([204, 0, 0])
+    white = np.array([255,255,255])
+    lime = np.array([0,255,0])
+    grey4 = np.array([228,228,228])
+    grey5 = np.array([206,206,206])
+    grey6 = np.array([111,111,111])
+    grey7 = np.array([204,204,204])
+    grey8 = np.array([251,251,251])
+    grey9 = np.array([139,139,139])
+    black2 = np.array([81, 81, 81])
+    black3 = np.array([38, 38, 38])
+    black4 = np.array([33, 33, 33])
+    black5 = np.array([26, 26, 26])
+    black6 = np.array([45,45,45])
+
+
+
     new_list = []
     for col in obs:
       for i in range(len(col)):
