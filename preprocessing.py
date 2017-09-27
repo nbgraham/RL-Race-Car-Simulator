@@ -1,17 +1,19 @@
 import numpy as np
 
 def focus_middle(observation):
-    cropped = observation[:81, 8:89]
-
-    gray = rgb2gray(cropped)
-
-    car_road_gray = just_car_road(gray)
+    car_road_gray = cropped_grayscale_car_road(observation)
     coarse = rebin(car_road_gray, (27,27))
 
     focused_middle = np.hstack([coarse[:,0:9], car_road_gray[::3,27:53],coarse[:,18:27]])
 
     return focused_middle
 
+def cropped_grayscale_car_road(observation):
+    cropped = observation[:81, 8:89]
+    gray = rgb2gray(cropped)
+    car_road_gray = just_car_road(gray)
+
+    return car_road_gray
 
 def just_car_road(gray):
     gray[gray<60] = 0
