@@ -12,8 +12,11 @@ max_time_steps = 2000
 action_time_steps = 5
 batch_size = 10
 target_reward_per_frame = 1.5
+min_reward_per_frame = -0.1
 
 action_set = np.array([
+#nothing
+[0,0,0],
 #steering
 [-1.0,0,0],
 [-0.5,0,0],
@@ -25,14 +28,16 @@ action_set = np.array([
 [0,0.8,0],
 #brake
 [0,0,0.5],
-[0,0,0.8],
-#nothing
-[0,0,0]
+[0,0,0.8]
 ])
 
 n_hidden = 25
 n_outputs = len(action_set)
 input_dim = 9*9+7 # size of list returned from preprocessing
+
+
+err_a = (1-np.exp(-1))/(target_reward_per_frame-min_reward_per_frame)
+err_b = np.exp(-1)-err_a
 
 # initialize model [-1,1] with mean 0
 np.random.seed(35)
@@ -52,9 +57,12 @@ def main():
         l0_list = []
         l1_list = []
         l2_list = []
-        action_list = []
         error_list = []
-        action = [0,0,0] # [steering, gas, brake]
+
+        # default action
+        #action = [0,0,0] # [steering, gas, brake]
+        action_selector = np.zeros((1,len(action_set)))
+        action_selector[:][0] = 1 # default to nothing action
 
         for t in range(max_time_steps):
             if render: env.render()
@@ -64,17 +72,19 @@ def main():
                 dashboard_values = pre.get_dashboard_values(observation)
                 obs = np.hstack([coarse_road, dashboard_values])
 
-                l2, hidden_layer = forward(obs)
+                l2, l1 = forward(obs)
 
+                # use prev action selection to calculate error
                 reward_per_time_step = interval_reward/action_time_steps
-                err = error(reward_per_time_step, l2)
+                err = error(reward_per_time_step, action_selector, l2)
+
+                # get new action selection
                 action_selector = get_env_action(l2)
                 action = np.dot(action_selector, action_set).ravel()
 
                 l0_list.append(obs)
-                l1_list.append(hidden_layer)
+                l1_list.append(l1)
                 l2_list.append(l2)
-                action_list.append(action_selector)
                 error_list.append(err)
 
                 interval_reward = 0
@@ -144,14 +154,18 @@ def sigmoidDeriv(x):
     #assuming x is a result sigmoid(y)
     return x*(1-x)
 
-def error(avg_reward, action):
-    badness = (target_reward_per_frame - avg_reward)/1.1
-    random_bit = np.random.choice([1,-1])
-    dev = badness/2.0
-    change = random_bit*dev
-    new_action = action + change
-    new_action = new_action % 1.0
-    return new_action - action
+def error(avg_reward, action_selector, nn_prob):
+    badness = log(err_a*avg_reward + err_b) # [-1.0], [bad.good]
+
+    action_delta = np.copy(action_selector)
+    action_delta[aciton_delta == 0] = -1
+    action_delta *= badness
+
+    action_target = action + action_delta
+
+    error = action_target - nn_prob
+
+    return error
 
 if __name__ == "__main__":
     main()
