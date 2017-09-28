@@ -1,4 +1,32 @@
 import numpy as np
+import cv2
+
+def bottom_bar(observation):
+    #https://gym.openai.com/evaluations/eval_BPzPoiBtQOCj8yItyHLhmg/
+    bottom_black_bar = s[84:, 12:]
+    img = cv2.cvtColor(bottom_black_bar, cv2.COLOR_RGB2GRAY)
+    bottom_black_bar_bw = cv2.threshold(img, 1, 255, cv2.THRESH_BINARY)[1]
+    bottom_black_bar_bw = cv2.resize(bottom_black_bar_bw, (84, 12), interpolation = cv2.INTER_NEAREST)
+
+
+#https://gym.openai.com/evaluations/eval_BPzPoiBtQOCj8yItyHLhmg/
+def compute_steering_speed_gyro_abs(bottom_black_bar_gray_array):
+    right_steering = bottom_black_bar_gray_array[6, 36:46].mean()/255
+    left_steering = bottom_black_bar_gray_array[6, 26:36].mean()/255
+    steering = (right_steering - left_steering + 1.0)/2
+
+    left_gyro = bottom_black_bar_gray_array[6, 46:60].mean()/255
+    right_gyro = bottom_black_bar_gray_array[6, 60:76].mean()/255
+    gyro = (right_gyro - left_gyro + 1.0)/2
+
+    speed = bottom_black_bar_gray_array[:, 0][:-2].mean()/255
+    abs1 = bottom_black_bar_gray_array[:, 6][:-2].mean()/255
+    abs2 = bottom_black_bar_gray_array[:, 8][:-2].mean()/255
+    abs3 = bottom_black_bar_gray_array[:, 10][:-2].mean()/255
+    abs4 = bottom_black_bar_gray_array[:, 12][:-2].mean()/255
+
+    return [steering, speed, gyro, abs1, abs2, abs3, abs4]
+
 
 def focus_middle(observation):
     car_road_gray = cropped_grayscale_car_road(observation)
@@ -13,7 +41,6 @@ def coarse(observation):
     car_road_gray = cropped_grayscale_car_road(observation)
     coarse = rebin(car_road_gray, (9,9))
     return coarse
-
 
 def fine_car(observation):
     car_road_gray = cropped_grayscale_car_road(observation)
