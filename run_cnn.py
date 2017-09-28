@@ -7,7 +7,7 @@ import preprocessing as pre
 
 render = True # Does't work if false, observations are wrong
 
-n_episodes = 10
+n_episodes = 50
 max_time_steps = 2000
 action_time_steps = 5
 batch_size = 10
@@ -106,7 +106,7 @@ def main():
     json.dump(rewards, f)
     f.close()
 
-    myplot.plotRewards("Random", rewards, 1)
+    myplot.plotRewards("Random", rewards, int(n_episodes/10))
 
 def forward(l0):
     l1 = sigmoid(np.dot(l0, model['W1']))
