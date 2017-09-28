@@ -158,7 +158,7 @@ def error(avg_reward, action_selector, nn_prob):
     badness = log(err_a*avg_reward + err_b) # [-1.0], [bad.good]
 
     action_delta = np.copy(action_selector)
-    action_delta[aciton_delta == 0] = -1
+    action_delta[action_delta == 0] = -1
     action_delta *= badness
 
     action_target = action + action_delta
