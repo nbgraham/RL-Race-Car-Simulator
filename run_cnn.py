@@ -16,12 +16,12 @@ target_reward_per_frame = 1.5
 
 n_hidden = 4
 n_actions = 3
-dim = 81 # size of list returned from preprocessing
+input_dim = 9*9+7 # size of list returned from preprocessing
 
 # initialize model [-1,1] with mean 0
 np.random.seed(35)
 model = {}
-model['W1'] = 2 * np.random.random((dim, n_hidden)) - 1
+model['W1'] = 2 * np.random.random((input_dim, n_hidden)) - 1
 model['W2'] = 2 * np.random.random((n_hidden, n_actions)) - 1
 
 def main():
@@ -43,7 +43,10 @@ def main():
             if render: env.render()
 
             if t> 0 and (t % action_time_steps == 0):
-                obs = pre.coarse(observation).ravel()/255
+                coarse_road = pre.coarse(observation).ravel()/255
+                dashboard_values = pre.get_dashboard_values(observation)
+                obs = np.concatenate(coarse_road, dashboard_values)
+
                 l2, hidden_layer = forward(obs)
 
                 reward_per_time_step = interval_reward/action_time_steps
