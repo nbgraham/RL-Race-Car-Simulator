@@ -3,10 +3,12 @@ import cv2
 
 def bottom_bar(observation):
     #https://gym.openai.com/evaluations/eval_BPzPoiBtQOCj8yItyHLhmg/
-    bottom_black_bar = s[84:, 12:]
+    bottom_black_bar = observation[84:, 12:]
     img = cv2.cvtColor(bottom_black_bar, cv2.COLOR_RGB2GRAY)
     bottom_black_bar_bw = cv2.threshold(img, 1, 255, cv2.THRESH_BINARY)[1]
     bottom_black_bar_bw = cv2.resize(bottom_black_bar_bw, (84, 12), interpolation = cv2.INTER_NEAREST)
+
+    return bottom_black_bar_bw
 
 
 #https://gym.openai.com/evaluations/eval_BPzPoiBtQOCj8yItyHLhmg/
