@@ -28,6 +28,11 @@ def compute_steering_speed_gyro_abs(bottom_black_bar_gray_array):
     return [steering, speed, gyro, abs1, abs2, abs3, abs4]
 
 
+def get_dashboard_values(observation):
+    bottom_black_bar_gray_array = bottom_bar(observation)
+    dashboard_values = compute_steering_speed_gyro_abs(bottom_black_bar_gray_array)
+    return dashboard_values
+
 def focus_middle(observation):
     car_road_gray = cropped_grayscale_car_road(observation)
     coarse = rebin(car_road_gray, (27,27))
