@@ -1,25 +1,28 @@
 import gym
 import numpy as np
+import json
 
 import myplot
 import preprocessing as pre
 
 render = True # Does't work if false, observations are wrong
-n_episodes = 1
+
+n_episodes = 50
+max_time_steps = 2000
 action_time_steps = 5
 batch_size = 10
 
-target_reward_per_frame = 1
+target_reward_per_frame = 1.5
 
-n_hidden = 500
-n_actions = 3
-dim = 801 # size of list returned from preprocessing
+n_hidden = 25
+n_outputs = 3
+input_dim = 9*9+7 # size of list returned from preprocessing
 
+# initialize model [-1,1] with mean 0
 np.random.seed(35)
 model = {}
-# initialize [-1,1] with mean 0
-model['W1'] = 2 * np.random.random((dim, n_hidden)) - 1
-model['W2'] = 2 * np.random.random((n_hidden, n_actions)) - 1
+model['W1'] = 2 * np.random.random((input_dim, n_hidden)) - 1
+model['W2'] = 2 * np.random.random((n_hidden, n_outputs)) - 1
 
 def main():
     env = gym.make('CarRacing-v0')
@@ -34,32 +37,37 @@ def main():
         l1_list = []
         l2_list = []
         error_list = []
-
         action = [0,0,0] # [steering, gas, brake]
-        for t in range(1000):
+
+        for t in range(max_time_steps):
             if render: env.render()
 
-            if (t % action_time_steps == 0):
-                obs = pre.focus_car(observation)
-                action, hidden_layer = forward(obs)
+            if t> 0 and (t % action_time_steps == 0):
+                coarse_road = pre.coarse(observation).ravel()/255
+                dashboard_values = pre.get_dashboard_values(observation)
+                obs = np.hstack([coarse_road, dashboard_values])
+
+                l2, hidden_layer = forward(obs)
 
                 reward_per_time_step = interval_reward/action_time_steps
-                err = error(reward_per_time_step, action)
+                err = error(reward_per_time_step, l2)
 
                 l0_list.append(obs)
                 l1_list.append(hidden_layer)
-                l2_list.append(action)
+                l2_list.append(l2)
                 error_list.append(err)
 
                 if t % (batch_size * action_time_steps) == 0:
-                    print("Time step:", t)
-                    print("Action: ", action)
-                    print("Error:",  err)
 
                     l0_array = np.vstack(l0_list)
                     l1_array = np.vstack(l1_list)
                     l2_array = np.vstack(l2_list)
                     error_array = np.vstack(error_list)
+
+                    if t %250 == 0:
+                        print("  Time step:", t)
+                        print("  Mean error")
+                        print("  ", np.mean(error_array,axis=0))
 
                     l2_delta = error_array * sigmoidDeriv(l2_array)
                     l1_error = l2_delta.dot(model['W2'].T)
@@ -74,6 +82,11 @@ def main():
                     error_list = []
 
                 interval_reward = 0
+
+                #copy l2 so we can modify it
+                action = np.empty_like(l2)
+                action[:] = l2
+
                 action[0] = 2*action[0] - 1 # scale steering from [0,1] to [-1,1]
 
 
@@ -82,15 +95,18 @@ def main():
             interval_reward += reward
             sum_reward += reward
 
-            if done or t==999:
+            if done or t==max_time_steps-1:
                 print("Episode {} finished after {} timesteps".format(i_episode, t+1))
                 print("Reward: {}".format(sum_reward))
                 rewards.append(sum_reward)
             if done:
-                break;
+                break
 
-    #print (rewards)
-    #myplot.plotRewards("Random", rewards, 1)
+    f = open('rewards','w')
+    json.dump(rewards, f)
+    f.close()
+
+    myplot.plotRewards("Random", rewards, int(n_episodes/10))
 
 def forward(l0):
     l1 = sigmoid(np.dot(l0, model['W1']))
