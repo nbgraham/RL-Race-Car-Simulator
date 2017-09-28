@@ -11,11 +11,27 @@ n_episodes = 50
 max_time_steps = 2000
 action_time_steps = 5
 batch_size = 10
-
 target_reward_per_frame = 1.5
 
+action_set = np.array([
+#steering
+[-0.5,0,0],
+[-0.2,0,0],
+[0,0,0],
+[0.2,0,0],
+[0.5,0,0],
+#gas
+[0,0.2,0],
+[0,0.5,0],
+#brake
+[0,0,0.2],
+[0,0,0.2],
+#nothing
+[0,0,0]
+])
+
 n_hidden = 25
-n_outputs = 3
+n_outputs = len(action_set)
 input_dim = 9*9+7 # size of list returned from preprocessing
 
 # initialize model [-1,1] with mean 0
@@ -84,10 +100,7 @@ def main():
                 interval_reward = 0
 
                 #copy l2 so we can modify it
-                action = np.empty_like(l2)
-                action[:] = l2
-
-                action[0] = 2*action[0] - 1 # scale steering from [0,1] to [-1,1]
+                action = get_env_action(l2)
 
 
             observation, reward, done, info = env.step(action) # observation is 96x96x3
@@ -107,6 +120,15 @@ def main():
     f.close()
 
     myplot.plotRewards("Random", rewards, int(n_episodes/10))
+
+
+def get_env_action(nn_output):
+    total = np.sum(nn_output)
+    prob = nn_output/total
+    action_index = np.random.choice(len(action_set), p=prob)
+    action = action_set[action_index]
+    return action
+
 
 def forward(l0):
     l1 = sigmoid(np.dot(l0, model['W1']))
