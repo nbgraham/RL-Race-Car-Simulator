@@ -161,7 +161,7 @@ def error(avg_reward, action_selector, nn_prob):
     action_delta[action_delta == 0] = -1
     action_delta *= badness
 
-    action_target = action + action_delta
+    action_target = np.clip(nn_prob + action_delta,a_min=0,a_max=1)
 
     error = action_target - nn_prob
 
