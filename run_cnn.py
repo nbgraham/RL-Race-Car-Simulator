@@ -15,17 +15,17 @@ target_reward_per_frame = 1.5
 
 action_set = np.array([
 #steering
+[-1.0,0,0],
 [-0.5,0,0],
-[-0.2,0,0],
 [0,0,0],
-[0.2,0,0],
 [0.5,0,0],
+[1.0,0,0],
 #gas
-[0,0.2,0],
 [0,0.5,0],
+[0,0.8,0],
 #brake
-[0,0,0.2],
-[0,0,0.2],
+[0,0,0.5],
+[0,0,0.8],
 #nothing
 [0,0,0]
 ])
@@ -52,6 +52,7 @@ def main():
         l0_list = []
         l1_list = []
         l2_list = []
+        action_list = []
         error_list = []
         action = [0,0,0] # [steering, gas, brake]
 
@@ -67,11 +68,16 @@ def main():
 
                 reward_per_time_step = interval_reward/action_time_steps
                 err = error(reward_per_time_step, l2)
+                action_selector = get_env_action(l2)
+                action = np.dot(action_selector, action_set).ravel()
 
                 l0_list.append(obs)
                 l1_list.append(hidden_layer)
                 l2_list.append(l2)
+                action_list.append(action_selector)
                 error_list.append(err)
+
+                interval_reward = 0
 
                 if t % (batch_size * action_time_steps) == 0:
 
@@ -97,12 +103,6 @@ def main():
                     l2_list = []
                     error_list = []
 
-                interval_reward = 0
-
-                #copy l2 so we can modify it
-                action = get_env_action(l2)
-
-
             observation, reward, done, info = env.step(action) # observation is 96x96x3
 
             interval_reward += reward
@@ -126,8 +126,9 @@ def get_env_action(nn_output):
     total = np.sum(nn_output)
     prob = nn_output/total
     action_index = np.random.choice(len(action_set), p=prob)
-    action = action_set[action_index]
-    return action
+    action_selector = np.zeros((1,len(action_set)))
+    action_selector[:,action_index] = 1
+    return action_selector
 
 
 def forward(l0):
