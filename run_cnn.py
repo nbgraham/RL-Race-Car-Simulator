@@ -58,15 +58,16 @@ def main():
                 error_list.append(err)
 
                 if t % (batch_size * action_time_steps) == 0:
-                    print("Time step:", t)
 
                     l0_array = np.vstack(l0_list)
                     l1_array = np.vstack(l1_list)
                     l2_array = np.vstack(l2_list)
                     error_array = np.vstack(error_list)
 
-                    print("Mean error")
-                    print(np.mean(error_array,axis=0))
+                    if t %250 == 0:
+                        print("  Time step:", t)
+                        print("  Mean error")
+                        print("  ", np.mean(error_array,axis=0))
 
                     l2_delta = error_array * sigmoidDeriv(l2_array)
                     l1_error = l2_delta.dot(model['W2'].T)
