@@ -60,9 +60,9 @@ def main():
         error_list = []
 
         # default action
-        #action = [0,0,0] # [steering, gas, brake]
         action_selector = np.zeros((1,len(action_set)))
-        action_selector[:][0] = 1 # default to nothing action
+        action_selector[:,0] = 1 # default to nothing action
+        action = np.dot(action_selector, action_set).ravel()  # [steering, gas, brake]
 
         for t in range(max_time_steps):
             if render: env.render()
