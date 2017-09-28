@@ -51,6 +51,11 @@ def main():
 
     rewards=[]
     for i_episode in range(n_episodes):
+        if i_episode > 20:
+            easiness = 3
+        if i_episode > 40:
+            easiness = 1
+            
         observation = env.reset()
         sum_reward = 0
         interval_reward = 0
@@ -156,7 +161,8 @@ def sigmoidDeriv(x):
     return x*(1-x)
 
 def error(avg_reward, action_selector, nn_prob):
-    badness = log(err_a*avg_reward + err_b) # [-1.0], [bad.good]
+    scaled_x = (avg_reward+1-min_reward_per_frame)
+    badness = np.log(err_a*scaled_x + err_b)**easiness # [-1.0], [bad.good]
 
     action_delta = np.copy(action_selector)
     action_delta[action_delta == 0] = -1
