@@ -13,6 +13,7 @@ action_time_steps = 5
 batch_size = 10
 target_reward_per_frame = 1.5
 min_reward_per_frame = -0.1
+easiness = 5
 
 action_set = np.array([
 #nothing
