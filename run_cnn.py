@@ -55,7 +55,7 @@ def main():
             easiness = 3
         if i_episode > 40:
             easiness = 1
-            
+
         observation = env.reset()
         sum_reward = 0
         interval_reward = 0
@@ -164,13 +164,13 @@ def error(avg_reward, action_selector, nn_prob):
     scaled_x = (avg_reward+1-min_reward_per_frame)
     badness = np.log(err_a*scaled_x + err_b)**easiness # [-1.0], [bad.good]
 
-    action_delta = np.copy(action_selector)
-    action_delta[action_delta == 0] = -1
-    action_delta *= badness
+    selector_delta = np.copy(action_selector)
+    selector_delta[selector_delta == 0] = -1
+    selector_delta *= badness
 
-    action_target = np.clip(nn_prob + action_delta,a_min=0,a_max=1)
+    selector_target = np.clip(nn_prob + selector_delta,a_min=0,a_max=1)
 
-    error = action_target - nn_prob
+    error = selector_target - nn_prob
 
     return error
 
