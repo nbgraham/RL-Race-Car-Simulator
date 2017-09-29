@@ -1,13 +1,16 @@
 import gym
 import numpy as np
 import json
+import cv2
+import math
 
 import myplot
 import preprocessing as pre
 
+
 render = True # Does't work if false, observations are wrong
 
-n_episodes = 50
+n_episodes = 1
 max_time_steps = 2000
 action_time_steps = 5
 batch_size = 10
@@ -43,9 +46,12 @@ def main():
             if render: env.render()
 
             if t> 0 and (t % action_time_steps == 0):
-                coarse_road = pre.coarse(observation).ravel()/255
+                coarse_road_matrix = pre.coarse(observation)
+                coarse_road = coarse_road_matrix.ravel()/255
                 dashboard_values = pre.get_dashboard_values(observation)
                 obs = np.hstack([coarse_road, dashboard_values])
+
+                show_model(coarse_road_matrix)
 
                 l2, hidden_layer = forward(obs)
 
@@ -107,6 +113,62 @@ def main():
     f.close()
 
     myplot.plotRewards("Random", rewards, int(n_episodes/10))
+
+
+def show_model(model):
+    cv2.imshow('model', model)
+    cv2.waitKey(1)
+
+    matrix_scaled = model/255
+
+    road_vector = get_main_vector(matrix_scaled)
+
+    gyro_dim = 40
+    gyro_img = np.zeros((gyro_dim,gyro_dim))
+    slope = road_vector[1]/road_vector[0]#4*(gyro-0.5)
+    for i in range(gyro_dim):
+        for j in range(gyro_dim):
+            x = i - gyro_dim/2
+            y = j - gyro_dim/2
+
+            error = abs(y - slope*x)
+            error = min(error, 0.5)
+            gyro_img[i][j] = error*-510 + 255
+
+    cv2.imshow('gyro', gyro_img)
+    cv2.waitKey(1)
+
+def get_main_vector(matrix):
+    alpha = 0.1
+    vector = np.array([1.,1.])
+    vector = normalize(vector)
+
+    for i in range(len(matrix)):
+        y = -1*(i-math.floor(len(matrix)/2))
+        row = matrix[i]
+        for j in range(len(row)):
+            x = j-math.floor(len(row)/2)
+            point_vector = np.array([x,y])
+
+            if np.sum(point_vector)<0:
+              point_vector = -1*point_vector
+
+            norm = []
+            if point_vector[0] == 0 and point_vector[1]==0:
+              norm = point_vector
+            else:
+              norm = normalize(point_vector)
+              norm = point_vector/math.sqrt(np.sum(point_vector*point_vector))
+
+            error = norm-vector
+            delta = alpha*error*row[j]
+            vector += delta
+            vector = normalize(vector)
+
+    return vector
+
+def normalize(v):
+  return v/math.sqrt(np.sum(v*v))
 
 def forward(l0):
     l1 = sigmoid(np.dot(l0, model['W1']))
