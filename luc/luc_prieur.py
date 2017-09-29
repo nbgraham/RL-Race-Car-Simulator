@@ -13,6 +13,25 @@ gamma = 0.99
 N = 102
 eps_coeff=0.3 # first run was 0.5
 
+action_set = np.array([
+#nothing
+[0,0,0],
+#steering
+[-1.0,0,0],
+[-0.5,0,0],
+[0,0,0],
+[0.5,0,0],
+[1.0,0,0],
+#gas
+[0,0.3,0],
+[0,0.5,0],
+[0,0.8,0],
+#brake
+[0,0,0.5],
+[0,0,0.8]
+])
+
+
 def main():
     env = gym.make('CarRacing-v0')
     env = wrappers.Monitor(env, 'monitor-folder', force=True)
@@ -97,31 +116,55 @@ def play_one(env, model, eps, gamma):
     full_reward_received = False
     totalreward = 0
     iters = 0
+
+    reward_decay = 0.8
+    residual_reward = 0
     while not done:
         state = compute_state(observation)
 
-        argmax_qval, qval = model.sample_action(state, eps)
-        action = convert_argmax_qval_to_env_action(argmax_qval)
+        argmax_pi, pi = model.sample_action(state, eps)
+        action_selector = np.zeros((1,11))
+        action_selector[argmax_pi] = 1
+        action = np.dot(action_selector,action_set).ravel()
         observation, reward, done, info = env.step(action)
 
-        prev_state = state
-        state = compute_state(observation)
+        residual_reward = reward_decay*residual_reward + reward
 
-        # update the model
-        # standard Q learning TD(0)
-        next_qval = model.predict(state)
-        G = reward + gamma*np.max(next_qval)
-        y = qval[:]
-        y[argmax_qval] = G
-        model.update(prev_state, y)
-        totalreward += reward
-        iters += 1
+        if iters%50:
+            print(residual_reward)
+        # prev_state = state
+        # state = compute_state(observation)
+        #
+        # # update the model
+        # # standard Q learning TD(0)
+        # next_qval = model.predict(state)
+        # G = reward + gamma*np.max(next_qval)
+        # y = qval[:]
+        # y[argmax_qval] = G
+        # model.update(prev_state, y)
+        # totalreward += reward
+        # iters += 1
 
         if iters > 1500:
             print("This episode is stuck")
             break
 
     return totalreward, iters
+
+
+def error(avg_reward, action_selector, nn_prob):
+    scaled_x = (avg_reward+1-min_reward_per_frame)
+    badness = np.log(err_a*scaled_x + err_b)**easiness # [-1.0], [bad.good]
+
+    selector_delta = np.copy(action_selector)
+    selector_delta[selector_delta == 0] = -1
+    selector_delta *= badness
+
+    selector_target = np.clip(nn_prob + selector_delta,a_min=0,a_max=1)
+
+    error = selector_target - nn_prob
+
+    return error
 
 
 if __name__ == "__main__":
