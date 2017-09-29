@@ -1,4 +1,4 @@
- rgb_pixel_matrix[import gym
+import gym
 import os
 import sys
 import numpy as np
@@ -20,19 +20,18 @@ import cv2
 
 gamma = 0.99
 N = 102
+vector_size = 10*10 + 7 + 4
 
 def main():
     env = gym.make('CarRacing-v0')
     env = wrappers.Monitor(env, 'monitor-folder', force=True)
-
-    vector_size = 10*10 + 7 + 4
 
     model = Model(env)
 
     totalrewards = np.empty(N)
     costs = np.empty(N)
     for n in range(N):
-        eps = 0.5/np.sqrt(n+1 + 900)
+        eps = 0.3/np.sqrt(n+1 + 900)
         totalreward, iters = play_one(env, model, eps, gamma)
         totalrewards[n] = totalreward
         if n % 1 == 0:
@@ -86,7 +85,7 @@ def transform(rgb_pixel_matrix):
 
 
 # this function uses the bottom black bar of the screen and extracts steering setting, speed and gyro data
-def compute_steering_speed_gyro_abs(a):
+def compute_steering_speed_gyro_abs(black_bar_pixel_matrix):
     right_steering = black_bar_pixel_matrix[6, 36:46].mean()/255
     left_steering = black_bar_pixel_matrix[6, 26:36].mean()/255
     steering = (right_steering - left_steering + 1.0)/2
@@ -226,5 +225,5 @@ def compute_state(observation):
     return state
 
 
-if __name == "__main__":
+if __name__ == "__main__":
     main()
