@@ -120,26 +120,32 @@ def show_model(model):
     cv2.waitKey(1)
 
     matrix_scaled = model/255
-
     road_vector = get_main_vector(matrix_scaled)
 
-    gyro_dim = 40
-    gyro_img = np.zeros((gyro_dim,gyro_dim))
-    slope = road_vector[1]/road_vector[0]#4*(gyro-0.5)
-    for i in range(gyro_dim):
-        for j in range(gyro_dim):
-            x = i - gyro_dim/2
-            y = j - gyro_dim/2
+    print("road_vector", road_vector)
+    dim = 40
+    img = np.zeros((dim,dim))
+    for i in range(dim):
+        for j in range(dim):
+            x = i - math.floor(dim/2)
+            y = math.floor(dim/2) - j
+            v = np.array([x,y])
 
-            error = abs(y - slope*x)
-            error = min(error, 0.5)
-            gyro_img[i][j] = error*-510 + 255
+            if np.sum(v) < 0:
+                v *= -1
 
-    cv2.imshow('gyro', gyro_img)
+            guess=road_vector*vector_length(v)
+
+            error_vector = v-guess
+            error = vector_length(error_vector)/dim
+            img[i][j] = error
+
+    print(img)
+    cv2.imshow('road', img)
     cv2.waitKey(1)
 
 def get_main_vector(matrix):
-    alpha = 0.1
+    alpha = 0.5
     vector = np.array([1.,1.])
     vector = normalize(vector)
 
@@ -168,7 +174,10 @@ def get_main_vector(matrix):
     return vector
 
 def normalize(v):
-  return v/math.sqrt(np.sum(v*v))
+  return v/vector_length(v)
+
+def vector_length(v):
+    return math.sqrt(np.sum(v*v))
 
 def forward(l0):
     l1 = sigmoid(np.dot(l0, model['W1']))
