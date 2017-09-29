@@ -35,7 +35,7 @@ class Model:
         return self.model.predict(s.reshape(-1, vector_size), verbose=0)[0]
 
     def update(self, s, G):
-        self.model.fit(s.reshape(-1, vector_size), np.array(G).reshape(-1, 11), nb_epoch=1, verbose=0)
+        self.model.fit(s.reshape(-1, vector_size), np.array(G).reshape(-1, 11), epochs=1, verbose=0)
 
     def sample_action(self, s, eps):
         qval = self.predict(s)
