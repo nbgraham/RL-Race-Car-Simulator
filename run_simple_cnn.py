@@ -108,7 +108,7 @@ def main():
             if done:
                 break
 
-    f = open('rewards','w')
+    f = open('rewards/rewards','w')
     json.dump(rewards, f)
     f.close()
 

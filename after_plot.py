@@ -1,7 +1,7 @@
 import json
 import myplot
 
-f = open('rewards')
+f = open('rewards/rewards')
 rewards = json.load(f)
 
 myplot.plotRewards("Simple CNN",rewards,10)
