@@ -31,14 +31,14 @@ class Model:
         self.env = env
         self.model = create_nn()  # one feedforward nn for all actions.
 
-    def predict(self, s):
-        return self.model.predict(s.reshape(-1, vector_size), verbose=0)[0]
+    def predict(self, state):
+        return self.model.predict(state.reshape(-1, vector_size), verbose=0)[0]
 
-    def update(self, s, G):
-        self.model.fit(s.reshape(-1, vector_size), np.array(G).reshape(-1, 11), epochs=1, verbose=0)
+    def update(self, state, expected_output):
+        self.model.fit(state.reshape(-1, vector_size), np.array(expected_output).reshape(-1, 11), epochs=1, verbose=0)
 
-    def sample_action(self, s, eps):
-        qval = self.predict(s)
+    def sample_action(self, state, eps):
+        qval = self.predict(state)
         if np.random.random() < eps:
             return random.randint(0, 10), qval
         else:
