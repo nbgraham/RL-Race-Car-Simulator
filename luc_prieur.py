@@ -4,13 +4,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from gym import wrappers
 from datetime import datetime
-import random
-#from sklearn.preprocessing import StandardScaler
 import cv2
+
+from luc_model import Model, create_nn
+from luc_preprocessing import compute_state
 
 gamma = 0.99
 N = 102
-vector_size = 10*10 + 7 + 4
 eps_coeff=0.3 # first run was 0.5
 
 def main():

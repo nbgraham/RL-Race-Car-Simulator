@@ -3,7 +3,10 @@ from keras.models import Sequential, load_model
 from keras.layers import Dense, Activation#, Dropout, Flatten, Convolution2D, MaxPooling2D, Merge, Embedding
 from keras.optimizers import Adamax#,SGD, RMSprop, Adam
 from keras.utils import np_utils
+import numpy as np
+import random
 
+vector_size = 10*10 + 7 + 4
 
 def create_nn():
     if os.path.exists('race-car.h5'):
