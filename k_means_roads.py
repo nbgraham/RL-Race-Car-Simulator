@@ -9,8 +9,15 @@ def k_means(k, data):
     for i in initial_group_indices:
         group_means.append(data[i])
 
+    group_means = np.array(group_means)
+
     change_in_means = 1
+    run = 0
     while change_in_means > 0:
+        print("Run {}".format(run))
+        run += 1
+        print(change_in_means)
+
         prev_groups_means = np.copy(group_means)
 
         groups = []
@@ -20,7 +27,6 @@ def k_means(k, data):
         groups, group_means = update_group_and_means(data,groups, group_means)
         change_in_means = np.sum(abs(prev_groups_means - group_means))
 
-    print(groups)
     print(group_means)
 
 
@@ -38,7 +44,7 @@ def update_group_and_means(data, groups, group_means):
         groups[i_closest_group].append(data_entry)
 
     for i_group in range(len(group_means)):
-        group_means[i_group] = np.mean(groups[i_group])
+        group_means[i_group] = np.mean(groups[i_group], axis=0)
 
     return groups, group_means
 
@@ -47,8 +53,10 @@ def dist_f(a,b):
 
 
 if __name__ == "__main__":
-    # f = open('roads.np','rb')
-    # matrices = np.load(f)
-    # f.close()
-    a = np.array([1,6,4,8,275,15,88,4,438,86,14])
-    k_means(4, a)
+    f = open('roads.npy','rb')
+    matrices = np.load(f)/255
+    f.close()
+
+    matrices = matrices.reshape((-1,81,81))
+
+    k_means(2, matrices)
