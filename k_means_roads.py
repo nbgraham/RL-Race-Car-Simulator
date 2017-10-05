@@ -18,7 +18,7 @@ def k_means(k, data):
             groups.append([])
 
         groups, group_means = update_group_and_means(data,groups, group_means)
-        change_in_means = np.sum(abs(prev_groups_means-group_means))
+        change_in_means = np.sum(abs(prev_groups_means - group_means))
 
     print(groups)
     print(group_means)
@@ -30,7 +30,7 @@ def update_group_and_means(data, groups, group_means):
         i_closest_group = -1
 
         for i_group in range(len(group_means)):
-            dist = abs(data_entry-group_means[i_group])
+            dist = dist_f(data_entry, group_means[i_group])
             if min_dist is None or dist < min_dist:
                 min_dist = dist
                 i_closest_group = i_group
@@ -41,6 +41,9 @@ def update_group_and_means(data, groups, group_means):
         group_means[i_group] = np.mean(groups[i_group])
 
     return groups, group_means
+
+def dist_f(a,b):
+    return np.sum(abs(a - b))
 
 
 if __name__ == "__main__":
