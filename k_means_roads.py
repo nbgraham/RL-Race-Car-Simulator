@@ -27,7 +27,7 @@ def k_means(k, data):
         groups, group_means = update_group_and_means(data,groups, group_means)
         change_in_means = np.sum(abs(prev_groups_means - group_means))
 
-    print(group_means)
+    return group_means
 
 
 def update_group_and_means(data, groups, group_means):
@@ -53,10 +53,8 @@ def dist_f(a,b):
 
 
 if __name__ == "__main__":
-    f = open('roads.npy','rb')
-    matrices = np.load(f)/255
+    f = open('roads_matrix.npy','rb')
+    matrices = np.load(f)
     f.close()
 
-    matrices = matrices.reshape((-1,81,81))
-
-    k_means(2, matrices)
+    group_means = k_means(10, matrices)
