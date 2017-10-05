@@ -480,15 +480,18 @@ if __name__=="__main__":
         env.monitor.start('/tmp/video-test', force=True)
     env.viewer.window.on_key_press = key_press
     env.viewer.window.on_key_release = key_release
-    while True:
+
+    for i in range(3):
         env.reset()
         total_reward = 0.0
         steps = 0
         restart = False
+        matrices = []
         while True:
             s, r, done, info = env.step(a)
 
             matrix = cropped_grayscale_car_road(s)
+            matrices.append(matrix)
 
             cv2.imshow('road', matrix)
             cv2.waitKey(1)
@@ -504,4 +507,9 @@ if __name__=="__main__":
             if not record_video: # Faster, but you can as well call env.render() every time to play full window.
                 env.render()
             if done or restart: break
+
+    f = open('roads.npy','wb')
+    np.save(f,np.vstack(matrices))
+    f.close()
+
     env.close()
