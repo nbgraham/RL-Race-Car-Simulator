@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 def k_means(k, data):
     initial_group_indices = np.random.choice(len(data), size=k, replace=False)
@@ -58,3 +60,12 @@ if __name__ == "__main__":
     f.close()
 
     group_means = k_means(10, matrices)
+
+    # for mean in group_means:
+    #     plt.figure()
+    #     plt.imshow(mean, vmin=0, vmax=1)
+    # plt.show()
+    # 
+    # f = open('roads_means.npy', 'wb')
+    # np.save(f, group_means)
+    # f.close()
