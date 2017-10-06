@@ -8,7 +8,6 @@ import pickle
 import myplot
 import preprocessing as pre
 
-
 render = True # Does't work if false, observations are wrong
 
 max_time_steps = 2000
@@ -38,7 +37,7 @@ action_set = np.array([
 def main(k):
     f = open('road_means_' + str(k) + '.npy','rb')
     road_means = np.load(f)
-    train(1, road_means, 0.001, 0.99)
+    train(100, road_means, 0.001, 0.99)
 
 
 def train(n_episodes, road_means, alpha, discount, load=False, save=True):
@@ -74,8 +73,8 @@ def train(n_episodes, road_means, alpha, discount, load=False, save=True):
                 prev_state = state
                 prev_action = action
 
-                cv2.imshow('road state', road_means[state[2]])
-                cv2.waitKey(1)
+                # cv2.imshow('road state', road_means[state[2]])
+                # cv2.waitKey(1)
 
                 interval_reward = 0
 
@@ -88,8 +87,6 @@ def train(n_episodes, road_means, alpha, discount, load=False, save=True):
             if done or t==max_time_steps-1:
                 print("Episode {} finished after {} timesteps".format(i_episode, t+1))
                 print("Reward: {}".format(sum_reward))
-                print("Q vals: ")
-                print(state_action_value)
                 rewards.append(sum_reward)
             if done:
                 break
