@@ -86,7 +86,7 @@ def train(n_episodes, road_means, alpha, discount, load=True, save=True):
             if done or t==max_time_steps-1:
                 print("Episode {} finished after {} timesteps".format(i_episode, t+1))
                 rewards.append(sum_reward)
-                print("Reward: {} RunningAverage: {}".format(np.mean(rewards)))
+                print("Reward: {} RunningAverage: {}".format(sum_reward, np.mean(rewards)))
             if done:
                 break
 
