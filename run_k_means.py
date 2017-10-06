@@ -95,7 +95,7 @@ def train(env, n_episodes, road_means, alpha, discount, load=True, save=True,  q
                 break
 
         if i_episode % 10 == 0:
-            with open('rewards/rewards2','w') as out_reward_file:
+            with open('rewards/' + rewardfile, 'w') as out_reward_file:
                 json.dump(rewards, out_reward_file)
 
             if save:
