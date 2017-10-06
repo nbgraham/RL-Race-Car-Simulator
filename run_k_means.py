@@ -36,14 +36,14 @@ action_set = np.array([
 ])
 
 
-def main(k):
+def main(k, n_episodes):
     f = open('road_means_' + str(k) + '.npy','rb')
     road_means = np.load(f)
 
     env = gym.make('CarRacing-v0')
     env = wrappers.Monitor(env, 'monitor-folder-'+str(k), force=True)
 
-    train(env, 200, road_means, 0.001, 0.99, load=False, qvalfile='q_vals_' + str(k) + '.pkl', rewardfile='reward_' + str(k) + '.json')
+    train(env, n_episodes, road_means, 0.001, 0.99, qvalfile='q_vals_' + str(k) + '.pkl', rewardfile='reward_' + str(k) + '.json')
 
 
 def train(env, n_episodes, road_means, alpha, discount, load=True, save=True,  qvalfile='q_vals.pkl', rewardfile='reward.json'):
@@ -228,6 +228,9 @@ def show_model(model):
 
 if __name__ == "__main__":
     k = 10
+    n_episodes = 100
     if len(sys.argv) > 1:
         k = sys.argv[1]
-    main(k)
+    if len(sys.argv) > 2:
+        n_episodes = int(sys.argv[2])
+    main(k, n_episodes)
