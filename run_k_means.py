@@ -40,7 +40,7 @@ def main(k):
     train(100, road_means, 0.001, 0.99)
 
 
-def train(n_episodes, road_means, alpha, discount, load=False, save=True):
+def train(n_episodes, road_means, alpha, discount, load=True, save=True):
     env = gym.make('CarRacing-v0')
 
     state_action_value = {}
@@ -50,7 +50,7 @@ def train(n_episodes, road_means, alpha, discount, load=False, save=True):
 
     rewards=[]
     for i_episode in range(n_episodes):
-        eps = abs(i_episode - n_episodes)/n_episodes
+        eps = abs(i_episode - n_episodes)/n_episodes/2 + 0.1
 
         observation = env.reset()
         sum_reward = 0
@@ -75,7 +75,6 @@ def train(n_episodes, road_means, alpha, discount, load=False, save=True):
 
                 # cv2.imshow('road state', road_means[state[2]])
                 # cv2.waitKey(1)
-
                 interval_reward = 0
 
 
@@ -86,17 +85,18 @@ def train(n_episodes, road_means, alpha, discount, load=False, save=True):
 
             if done or t==max_time_steps-1:
                 print("Episode {} finished after {} timesteps".format(i_episode, t+1))
-                print("Reward: {}".format(sum_reward))
                 rewards.append(sum_reward)
+                print("Reward: {} RunningAverage: {}".format(np.mean(rewards)))
             if done:
                 break
 
-    with open('rewards/rewards','w') as out_reward_file:
-        json.dump(rewards, out_reward_file)
+        if i_episode % 10 == 0:
+            with open('rewards/rewards2','w') as out_reward_file:
+                json.dump(rewards, out_reward_file)
 
-    if save:
-        with open('q_vals.pkl','wb') as out_q_val_file:
-            pickle.dump(state_action_value, out_q_val_file, protocol=pickle.HIGHEST_PROTOCOL)
+            if save:
+                with open('q_vals.pkl','wb') as out_q_val_file:
+                    pickle.dump(state_action_value, out_q_val_file, protocol=pickle.HIGHEST_PROTOCOL)
 
     myplot.plotRewards("K-means Q learner", rewards, int(n_episodes/10))
 
