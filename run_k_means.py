@@ -3,6 +3,7 @@ import numpy as np
 import json
 import cv2
 import math
+import pickle
 
 import myplot
 import preprocessing as pre
@@ -10,7 +11,6 @@ import preprocessing as pre
 
 render = True # Does't work if false, observations are wrong
 
-n_episodes = 1
 max_time_steps = 2000
 action_time_steps = 5
 batch_size = 10
@@ -38,28 +38,31 @@ action_set = np.array([
 def main(k):
     f = open('road_means_' + str(k) + '.npy','rb')
     road_means = np.load(f)
-    train(road_means, 0.001, 0.99)
+    train(1, road_means, 0.001, 0.99)
 
 
-def train(road_means, alpha, discount):
+def train(n_episodes, road_means, alpha, discount, load=False, save=True):
     env = gym.make('CarRacing-v0')
-    action = [0,0.1,0]
 
     state_action_value = {}
-    eps = 0.5
+    if load:
+        f = open('q_vals.pkl', 'rb')
+        state_action_value = pickle.load(f)
 
     rewards=[]
     for i_episode in range(n_episodes):
+        eps = abs(i_episode - n_episodes)/n_episodes
+
         observation = env.reset()
         sum_reward = 0
         interval_reward = 0
         prev_state = None
-        prev_aciton = None
+        prev_action = None
 
         for t in range(max_time_steps):
             if render: env.render()
 
-            if t> 0 and (t % action_time_steps == 0):
+            if t % action_time_steps == 0:
                 state = get_state(observation, road_means)
                 action = get_env_action(state, state_action_value, eps) # [steering, gas, brake]
 
@@ -73,8 +76,6 @@ def train(road_means, alpha, discount):
 
                 cv2.imshow('road state', road_means[state[2]])
                 cv2.waitKey(1)
-
-                print(str(state))
 
                 interval_reward = 0
 
@@ -93,9 +94,12 @@ def train(road_means, alpha, discount):
             if done:
                 break
 
-    f = open('rewards/rewards','w')
-    json.dump(rewards, f)
-    f.close()
+    with open('rewards/rewards','w') as out_reward_file:
+        json.dump(rewards, out_reward_file)
+
+    if save:
+        with open('q_vals.pkl','wb') as out_q_val_file:
+            pickle.dump(state_action_value, out_q_val_file, protocol=pickle.HIGHEST_PROTOCOL)
 
     myplot.plotRewards("K-means Q learner", rewards, int(n_episodes/10))
 
