@@ -5,6 +5,7 @@ import cv2
 import math
 import pickle
 from gym import wrappers
+import sys
 
 import myplot
 import preprocessing as pre
@@ -38,16 +39,17 @@ action_set = np.array([
 def main(k):
     f = open('road_means_' + str(k) + '.npy','rb')
     road_means = np.load(f)
-    train(100, road_means, 0.001, 0.99)
 
-
-def train(n_episodes, road_means, alpha, discount, load=True, save=True):
     env = gym.make('CarRacing-v0')
-    env = wrappers.Monitor(env, 'monitor-folder', force=True)
+    env = wrappers.Monitor(env, 'monitor-folder-'+str(k), force=True)
 
+    train(env, 200, road_means, 0.001, 0.99, load=False, qvalfile='q_vals_' + str(k) + '.pkl', rewardfile='reward_' + str(k) + '.json')
+
+
+def train(env, n_episodes, road_means, alpha, discount, load=True, save=True,  qvalfile='q_vals.pkl', rewardfile='reward.json'):
     state_action_value = {}
     if load:
-        f = open('q_vals.pkl', 'rb')
+        f = open(qvalfile, 'rb')
         state_action_value = pickle.load(f)
 
     rewards=[]
@@ -97,7 +99,7 @@ def train(n_episodes, road_means, alpha, discount, load=True, save=True):
                 json.dump(rewards, out_reward_file)
 
             if save:
-                with open('q_vals.pkl','wb') as out_q_val_file:
+                with open(qvalfile,'wb') as out_q_val_file:
                     pickle.dump(state_action_value, out_q_val_file, protocol=pickle.HIGHEST_PROTOCOL)
 
     myplot.plotRewards("K-means Q learner", rewards, int(n_episodes/10))
@@ -225,4 +227,7 @@ def show_model(model):
 
 
 if __name__ == "__main__":
-    main(10)
+    k = 10
+    if len(sys.argv) > 1:
+        k = sys.argv[1]
+    main(k)
