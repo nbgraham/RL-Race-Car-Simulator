@@ -46,6 +46,7 @@ def train(road_means, alpha, discount):
     action = [0,0.1,0]
 
     state_action_value = {}
+    eps = 0.5
 
     rewards=[]
     for i_episode in range(n_episodes):
@@ -60,7 +61,7 @@ def train(road_means, alpha, discount):
 
             if t> 0 and (t % action_time_steps == 0):
                 state = get_state(observation, road_means)
-                action = env.action_space.sample() # [steering, gas, brake]
+                action = get_env_action(state, state_action_value, eps) # [steering, gas, brake]
 
                 if prev_state is not None and prev_action is not None:
                     if str(prev_state) not in state_action_value:
@@ -86,6 +87,8 @@ def train(road_means, alpha, discount):
             if done or t==max_time_steps-1:
                 print("Episode {} finished after {} timesteps".format(i_episode, t+1))
                 print("Reward: {}".format(sum_reward))
+                print("Q vals: ")
+                print(state_action_value)
                 rewards.append(sum_reward)
             if done:
                 break
@@ -94,7 +97,27 @@ def train(road_means, alpha, discount):
     json.dump(rewards, f)
     f.close()
 
-    myplot.plotRewards("Random", rewards, int(n_episodes/10))
+    myplot.plotRewards("K-means Q learner", rewards, int(n_episodes/10))
+
+
+def get_env_action(state, state_action_value, eps):
+    action = None
+    if np.random.random() < eps:
+        action = random_action()
+    else:
+        max_val = -1*10**10
+        for act in action_set:
+            val = get_q_value(state, act, state_action_value)
+            if val > max_val:
+                max_val = val
+                action = act
+
+    return action
+
+
+def random_action():
+    action_index = np.random.choice(len(action_set))
+    return action_set[action_index]
 
 
 def q_update(prev_state, next_state, prev_action, state_action_value, alpha, reward, discount, init=0):
@@ -109,8 +132,8 @@ def get_action_max(state, state_action_value, init=0):
         max_value = -1*10**10
         for action in action_set:
             value = init
-            if action in state_action_value[state]:
-                value =  state_action_value[state][action]
+            if action in state_action_value[str(state)]:
+                value =  state_action_value[str(state)][(action)]
             if value > max_value:
                 max_value = value
                 action = action
@@ -121,8 +144,8 @@ def get_action_max(state, state_action_value, init=0):
 def get_q_value(state, action, state_action_value, init=0):
     value = init
     if state in state_action_value:
-        if action in state_action_value[state]:
-            value = state_action_value[state][action]
+        if action in state_action_value[str(state)]:
+            value = state_action_value[str(state)][str(action)]
 
     return value
 
