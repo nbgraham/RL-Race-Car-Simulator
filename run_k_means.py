@@ -4,11 +4,12 @@ import json
 import cv2
 import math
 import pickle
+from gym import wrappers
 
 import myplot
 import preprocessing as pre
 
-render = True # Does't work if false, observations are wrong
+render = False # Does't work if false, observations are wrong
 
 max_time_steps = 2000
 action_time_steps = 5
@@ -42,6 +43,7 @@ def main(k):
 
 def train(n_episodes, road_means, alpha, discount, load=True, save=True):
     env = gym.make('CarRacing-v0')
+    env = wrappers.Monitor(env, 'monitor-folder', force=True)
 
     state_action_value = {}
     if load:
