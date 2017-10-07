@@ -29,6 +29,33 @@ def calculateAveragedRewards(rewards, radius):
         averagedRewards.append(average)
     return averagedRewards
 
+def plotLoss(agent, losses, radius):
+    averagedLosses = calculateAveragedLoss(losses, radius)
+
+    ax = plt.figure().gca()
+
+    plt.plot(range(len(losses)), losses, label="Loss")
+    plt.plot(range(len(averagedLosses)), averagedLosses,label="Averaged Loss (r={})".format(radius))
+
+    plt.xlabel('Episode')
+    plt.ylabel('Loss')
+    plt.title('Loss per Episode for {} agent'.format(agent))
+    plt.legend()
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+    plt.show()
+
+def calculateAveragedLoss(loss, radius):
+    averagedLosses = []
+    for i in range(len(loss)):
+        left = i - radius
+        if left < 0: left = 0
+        right = i + radius
+        if right > len(loss): right = len(loss)
+        selection = loss[left:right+1]
+        average = sum(selection)/len(selection)
+        averagedLosses.append(average)
+    return averagedLosses
 
 def show_rgb(array):
     plt.imshow(array, interpolation='nearest')
