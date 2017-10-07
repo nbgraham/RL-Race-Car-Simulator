@@ -53,7 +53,7 @@ hidden = tf.nn.relu(tf.add(tf.matmul(x,weights['hidden']),biases['hidden']))
 qvals = tf.add(tf.matmul(hidden,weights['output']),biases['output'])
 
 #update model based on loss
-next_qvals = tf.placeholder("float",shape=[num_input,num_output])
+next_qvals = tf.placeholder("float",shape=[1,num_output])
 loss = tf.reduce_sum(tf.square(next_qvals-qvals))#mean squared error/sum of squares? I think
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 update_model = optimizer.minimize(loss)
@@ -69,7 +69,7 @@ def get_env_action(nn_output, eps):
         action_index = random.randint(0, len(action_set)-1)
     else:
         # print("using selected")
-        action_index = np.argmax(nn_output[0])
+        action_index = np.argmax(nn_output)
         # action_index = np.argmax(nn_output)
     return action_set[action_index]
 
@@ -99,31 +99,31 @@ with tf.Session() as sess:
             else:
                 state = pre.compute_state(observation)
 
-                q_values = sess.run(qvals, feed_dict={x: np.identity(num_input)*state})
-                # print("q_values\n",q_values)
+                q_values = sess.run(qvals, feed_dict={x: state.reshape(-1,num_input)})[0]
+                print("q_values\n",q_values)
                 action = get_env_action(q_values,eps)
-                # print("action\n",action)
+                print("action\n",action)
 
                 observation, reward, done, info = env.step(action)
                 prev_state = state
                 state = pre.compute_state(observation)
 
-                q_prime = sess.run(qvals,feed_dict={x:np.identity(num_input)*state})
-                # print("q_prime\n",q_prime)
-                # print("npmax q_prime\n",np.max(q_prime))
-                # print("np argmax q_prime\n",np.argmax(q_prime))
-                # print("reward\n",reward)
+                q_prime = sess.run(qvals,feed_dict={x:state.reshape(-1,num_input)})[0]
+                print("q_prime\n",q_prime)
+                print("npmax q_prime\n",np.max(q_prime))
+                print("np argmax q_prime\n",np.argmax(q_prime))
+                print("reward\n",reward)
                 q_target = reward + gamma * np.max(q_prime)
-                # print("q_target\n",q_target)
+                print("q_target\n",q_target)
                 target = q_values[:]
-                # print("target (should be q_values)\n",target)
+                print("target (should be q_values)\n",target)
                 # target[0][action_index] = q_target
-                target[np.argmax(q_values[0])] = q_target
-                # print("target updated action index\n",target)
+                target[np.argmax(q_values)] = q_target
+                print("target updated action index\n",target)
                 # print("len target",len(target))
 
                 #using cost bc didn't want to overwrite loss function
-                _,cost = sess.run([update_model,loss],feed_dict={x:np.identity(num_input)*state,next_qvals:target})
+                _,cost = sess.run([update_model,loss],feed_dict={x:state.reshape(-1,num_input),next_qvals:target.reshape(-1,num_output)})
 
             totalloss += cost
             totalreward += reward
@@ -145,5 +145,6 @@ with tf.Session() as sess:
         print("total steps:", totalrewards.sum())
 
     mp.plotLoss('simple tf', totallosses, int(num_episodes/10))
+    mp.show()
     mp.plotRewards("simple tf", totalrewards, int(num_episodes/10))
     mp.show()
