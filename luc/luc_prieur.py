@@ -10,7 +10,7 @@ from luc_model import Model, create_nn
 from luc_preprocessing import compute_state
 
 gamma = 0.99
-N = 102
+N = 500
 eps_coeff=0.3 # first run was 0.5
 
 def main():
@@ -61,7 +61,6 @@ def convert_argmax_qval_to_env_action(output_value):
     steering = 0.0
 
     # output value ranges from 0 to 10
-
     if output_value <= 8:
         # steering. brake and gas are zero.
         output_value -= 4
@@ -104,6 +103,8 @@ def play_one(env, model, eps, gamma):
         action = convert_argmax_qval_to_env_action(argmax_qval)
         observation, reward, done, info = env.step(action)
 
+        print("qval\n",qval)
+
         prev_state = state
         state = compute_state(observation)
 
@@ -112,7 +113,11 @@ def play_one(env, model, eps, gamma):
         next_qval = model.predict(state)
         G = reward + gamma*np.max(next_qval)
         y = qval[:]
+        print("prev state\n",prev_state)
+        print("G\n",G)
+        print("y\n",y)
         y[argmax_qval] = G
+        print("new y\n",y)
         model.update(prev_state, y)
         totalreward += reward
         iters += 1

@@ -7,24 +7,22 @@ import tensorflow as tf
 
 env = gym.make('CarRacing-v0')
 
-num_episodes = 500
+num_episodes = 10
 max_time_steps = 1500
 batch_size = 10
-action_time_steps = 1
+action_time_steps = 2
 
 #learning parameters
 learning_rate = 0.01
 gamma = 0.99
 #epsilon = 1 #starting at 1 so random all of the time (lowering as episodes increase)
                 #i.e. after 100 episodes 0.9, 200 0.8, etc...
-epsilon = 0.3 
+epsilon = 0.3 #after 900 episodes
 
 action_set = np.array([
-#nothing
-#[0,0,0],
 #steering (left,right)
-[-1.0,0,0],
-[1.0,0,0],
+[-1.0,0.1,0],
+[1.0,0.1,0],
 #gas
 [0,0.3,0],
 #brake
@@ -51,7 +49,7 @@ biases = {
 }
 
 #establish forward feed part of network to choose actions
-hidden = tf.nn.tanh(tf.add(tf.matmul(x,weights['hidden']),biases['hidden']))
+hidden = tf.nn.relu(tf.add(tf.matmul(x,weights['hidden']),biases['hidden']))
 qvals = tf.add(tf.matmul(hidden,weights['output']),biases['output'])
 
 #update model based on loss
@@ -63,7 +61,7 @@ update_model = optimizer.minimize(loss)
 init = tf.global_variables_initializer()
 
 saver = tf.train.Saver()
-model_path = "./model/"
+model_path = "./model/car.ckpt"
 
 def get_env_action(nn_output, eps):
     if np.random.random() < eps:
@@ -79,6 +77,7 @@ with tf.Session() as sess:
     sess.run(init)
 
     totalrewards = np.empty(num_episodes)
+    totallosses = np.empty(num_episodes)
     for episode in range(num_episodes):
         #decrease epsilon every 100 episodes
         if (episode % 100 == 0 and epsilon >= 0.1):
@@ -89,38 +88,44 @@ with tf.Session() as sess:
         done = False
         totalreward = 0
         timesteps = 0
+        totalloss = 0
 
         #run episode until done (or until max time steps)
         while not done:
             env.render()
-            state = pre.compute_state(observation)
 
-            q_values = sess.run(qvals, feed_dict={x: np.identity(num_input)*state})
-            # print("q_values\n",q_values)
-            action = get_env_action(q_values,eps)
-            # print("action\n",action)
+            if timesteps > 0 and action_time_steps % timesteps == 0:
+                observation, reward, done, info = env.step(action)
+            else:
+                state = pre.compute_state(observation)
 
-            observation, reward, done, info = env.step(action)
-            prev_state = state
-            state = pre.compute_state(observation)
+                q_values = sess.run(qvals, feed_dict={x: np.identity(num_input)*state})
+                # print("q_values\n",q_values)
+                action = get_env_action(q_values,eps)
+                # print("action\n",action)
 
-            q_prime = sess.run(qvals,feed_dict={x:np.identity(num_input)*state})
-            # print("q_prime\n",q_prime)
-            # print("npmax q_prime\n",np.max(q_prime))
-            # print("np argmax q_prime\n",np.argmax(q_prime))
-            # print("reward\n",reward)
-            q_target = reward + gamma * np.max(q_prime)
-            # print("q_target\n",q_target)
-            target = q_values[:]
-            # print("target (should be q_values)\n",target)
-            # target[0][action_index] = q_target
-            target[np.argmax(q_values[0])] = q_target
-            # print("target updated action index\n",target)
-            # print("len target",len(target))
+                observation, reward, done, info = env.step(action)
+                prev_state = state
+                state = pre.compute_state(observation)
 
-            #unsure
-            _,lol = sess.run([update_model,weights['output']],feed_dict={x:np.identity(num_input)*state,next_qvals:target})
+                q_prime = sess.run(qvals,feed_dict={x:np.identity(num_input)*state})
+                # print("q_prime\n",q_prime)
+                # print("npmax q_prime\n",np.max(q_prime))
+                # print("np argmax q_prime\n",np.argmax(q_prime))
+                # print("reward\n",reward)
+                q_target = reward + gamma * np.max(q_prime)
+                # print("q_target\n",q_target)
+                target = q_values[:]
+                # print("target (should be q_values)\n",target)
+                # target[0][action_index] = q_target
+                target[np.argmax(q_values[0])] = q_target
+                # print("target updated action index\n",target)
+                # print("len target",len(target))
 
+                #using cost bc didn't want to overwrite loss function
+                _,cost = sess.run([update_model,loss],feed_dict={x:np.identity(num_input)*state,next_qvals:target})
+
+            totalloss += cost
             totalreward += reward
             timesteps += 1
 
@@ -128,6 +133,7 @@ with tf.Session() as sess:
                 print("too many time steps, breaking")
                 break
 
+        totallosses[episode] = totalloss
         totalrewards[episode] = totalreward
         if episode % 1 == 0:
             print("episode:", episode, "timesteps:", timesteps, "total reward:", totalreward, "eps:", eps, "avg reward (last 100):",totalrewards[max(0,episode-100):(episode+1)].mean())
@@ -138,5 +144,6 @@ with tf.Session() as sess:
         print("avg reward for last 100 episodes:",totalrewards[-100:].mean())
         print("total steps:", totalrewards.sum())
 
-    mp.plotRewards("simple tf", totalrewards, int(num_episodes / 10))
+    mp.plotLoss('simple tf', totallosses, int(num_episodes/10))
+    mp.plotRewards("simple tf", totalrewards, int(num_episodes/10))
     mp.show()
