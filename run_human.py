@@ -28,8 +28,8 @@ env = gym.make('CarRacing-v0')
 env.render()
 if record_video:
     env.monitor.start('/tmp/video-test', force=True)
-env.viewer.window.on_key_press = key_press
-env.viewer.window.on_key_release = key_release
+env.env.viewer.window.on_key_press = key_press
+env.env.viewer.window.on_key_release = key_release
 
 for i in range(plays):
     env.reset()
