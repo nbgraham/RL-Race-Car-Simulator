@@ -4,34 +4,41 @@ import random
 import myplot as mp
 import preprocessing as pre
 import tensorflow as tf
+from gym import wrappers
 
 env = gym.make('CarRacing-v0')
+env = wrappers.Monitor(env, 'monitor-folder', force=True)
 
-num_episodes = 10
+num_episodes = 1000
 max_time_steps = 1500
 batch_size = 10
-action_time_steps = 2
+action_time_steps = 1
+default_time_steps = 10
 
 #learning parameters
-learning_rate = 0.01
+learning_rate = 0.001
 gamma = 0.99
-#epsilon = 1 #starting at 1 so random all of the time (lowering as episodes increase)
-                #i.e. after 100 episodes 0.9, 200 0.8, etc...
-epsilon = 0.3 #after 900 episodes
+epsilon = 1 #starting at 1 so random all of the time (lowering as episodes increase)
+# epsilon = 0.1 #after 900 episodes
+min_epsilon = 0.1
 
 action_set = np.array([
 #steering (left,right)
-[-1.0,0.1,0],
-[1.0,0.1,0],
+[-1.0,0,0],
+[-0.5,0.2,0],
+[0.5,0.2,0],
+[1.0,0,0],
 #gas
 [0,0.3,0],
+[0,0.5,0],
+[0,0.8,0],
 #brake
-[0,0,0.5]
+# [0,0,0.8]
 ])
 
 #network parameters
 num_input = 10*10+7+4 # size of list returned from preprocessing
-num_hidden = 256 #arbitrarily chosen
+num_hidden = 512
 num_output = len(action_set)
 
 #tf graph input
@@ -54,7 +61,7 @@ qvals = tf.add(tf.matmul(hidden,weights['output']),biases['output'])
 
 #update model based on loss
 next_qvals = tf.placeholder("float",shape=[1,num_output])
-loss = tf.reduce_sum(tf.square(next_qvals-qvals))#mean squared error/sum of squares? I think
+loss = tf.reduce_mean(tf.squared_difference(next_qvals,qvals))#mean squared error
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 update_model = optimizer.minimize(loss)
 
@@ -65,12 +72,9 @@ model_path = "./model/car.ckpt"
 
 def get_env_action(nn_output, eps):
     if np.random.random() < eps:
-        # print("using eps")
         action_index = random.randint(0, len(action_set)-1)
     else:
-        # print("using selected")
         action_index = np.argmax(nn_output)
-        # action_index = np.argmax(nn_output)
     return action_set[action_index]
 
 with tf.Session() as sess:
@@ -79,12 +83,13 @@ with tf.Session() as sess:
     totalrewards = np.empty(num_episodes)
     totallosses = np.empty(num_episodes)
     for episode in range(num_episodes):
-        #decrease epsilon every 100 episodes
-        if (episode % 100 == 0 and epsilon >= 0.1):
-            eps = epsilon - 0.1
+        #decrease epsilon every 10 episodes
+        if (episode % 10 == 0 and epsilon >= min_epsilon):
+            epsilon -= 0.01
 
         #reset for each episode
         observation = env.reset()
+        # prev_state = None
         done = False
         totalreward = 0
         timesteps = 0
@@ -94,36 +99,32 @@ with tf.Session() as sess:
         while not done:
             env.render()
 
-            if timesteps > 0 and action_time_steps % timesteps == 0:
-                observation, reward, done, info = env.step(action)
+            # cur_state = pre.compute_state(observation)
+            # state = cur_state - prev_state if prev_state is not None else np.zeros(num_input)
+            state = pre.compute_state(observation)
+
+            q_values = sess.run(qvals, feed_dict={x: state.reshape(-1,num_input)})[0]
+            if timesteps < default_time_steps:
+                #default to gas
+                action = [0,0.8,0]
             else:
-                state = pre.compute_state(observation)
+                action = get_env_action(q_values,epsilon)
 
-                q_values = sess.run(qvals, feed_dict={x: state.reshape(-1,num_input)})[0]
-                print("q_values\n",q_values)
-                action = get_env_action(q_values,eps)
-                print("action\n",action)
+            observation, reward, done, info = env.step(action)
+            prev_state = state
+            state = pre.compute_state(observation)
 
-                observation, reward, done, info = env.step(action)
-                prev_state = state
-                state = pre.compute_state(observation)
-
-                q_prime = sess.run(qvals,feed_dict={x:state.reshape(-1,num_input)})[0]
-                print("q_prime\n",q_prime)
-                print("npmax q_prime\n",np.max(q_prime))
-                print("np argmax q_prime\n",np.argmax(q_prime))
-                print("reward\n",reward)
+            q_prime = sess.run(qvals,feed_dict={x:state.reshape(-1,num_input)})[0]
+            if not done:
                 q_target = reward + gamma * np.max(q_prime)
-                print("q_target\n",q_target)
-                target = q_values[:]
-                print("target (should be q_values)\n",target)
-                # target[0][action_index] = q_target
-                target[np.argmax(q_values)] = q_target
-                print("target updated action index\n",target)
-                # print("len target",len(target))
+            else:#set terminal states to just the reward
+                q_target = reward
+            target = q_values[:]
+            target[np.argmax(q_values)] = q_target
 
-                #using cost bc didn't want to overwrite loss function
-                _,cost = sess.run([update_model,loss],feed_dict={x:state.reshape(-1,num_input),next_qvals:target.reshape(-1,num_output)})
+            #using cost bc didn't want to overwrite loss function
+            _,cost = sess.run([update_model,loss],feed_dict={x:prev_state.reshape(-1,num_input),next_qvals:target.reshape(-1,num_output)})
+
 
             totalloss += cost
             totalreward += reward
@@ -136,7 +137,7 @@ with tf.Session() as sess:
         totallosses[episode] = totalloss
         totalrewards[episode] = totalreward
         if episode % 1 == 0:
-            print("episode:", episode, "timesteps:", timesteps, "total reward:", totalreward, "eps:", eps, "avg reward (last 100):",totalrewards[max(0,episode-100):(episode+1)].mean())
+            print("episode:", episode, "timesteps:", timesteps, "total reward:", totalreward, "eps:", epsilon, "avg reward (last 100):",totalrewards[max(0,episode-100):(episode+1)].mean())
         if episode % batch_size == 0:
             save_path = saver.save(sess, model_path)
             print("model saved in file: ", save_path,"\n")
@@ -144,7 +145,5 @@ with tf.Session() as sess:
         print("avg reward for last 100 episodes:",totalrewards[-100:].mean())
         print("total steps:", totalrewards.sum())
 
-    mp.plotLoss('simple tf', totallosses, int(num_episodes/10))
-    mp.show()
     mp.plotRewards("simple tf", totalrewards, int(num_episodes/10))
     mp.show()
