@@ -84,8 +84,8 @@ def convert_argmax_qval_to_env_action(output_value):
 
     control_display = np.concatenate((brake_display, gas_display), axis=1)
 
-    cv2.imshow('controls', control_display)
-    cv2.waitKey(1)
+    # cv2.imshow('controls', control_display)
+    # cv2.waitKey(1)
 
     return [steering, gas, brake]
 
@@ -101,9 +101,10 @@ def play_one(env, model, eps, gamma):
 
         argmax_qval, qval = model.sample_action(state, eps)
         action = convert_argmax_qval_to_env_action(argmax_qval)
+        # print("action\n",action)
         observation, reward, done, info = env.step(action)
 
-        print("qval\n",qval)
+        # print("qval\n",qval)
 
         prev_state = state
         state = compute_state(observation)
@@ -113,11 +114,11 @@ def play_one(env, model, eps, gamma):
         next_qval = model.predict(state)
         G = reward + gamma*np.max(next_qval)
         y = qval[:]
-        print("prev state\n",prev_state)
-        print("G\n",G)
-        print("y\n",y)
+        # print("prev state\n",prev_state)
+        # print("G\n",G)
+        # print("y\n",y)
         y[argmax_qval] = G
-        print("new y\n",y)
+        # print("new y\n",y)
         model.update(prev_state, y)
         totalreward += reward
         iters += 1
