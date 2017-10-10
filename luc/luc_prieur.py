@@ -8,10 +8,11 @@ import cv2
 
 from luc_model import Model, create_nn
 from luc_preprocessing import compute_state
+from myplot import plotRewards
 
 gamma = 0.99
-N = 102
-eps_coeff=0.3 # first run was 0.5
+N = 1000
+eps_coeff=0.5 # initially 0.5
 
 def main():
     env = gym.make('CarRacing-v0')
@@ -30,14 +31,14 @@ def main():
         if n % 10 == 0:
             model.model.save('race-car.h5')
 
+            with open('rewards.npy', 'wb') as out_reward_file:
+                np.save(out_reward_file, totalrewards)
+
     print("avg reward for last 100 episodes:", totalrewards[-100:].mean())
     print("total steps:", totalrewards.sum())
 
-    plt.plot(totalrewards)
-    plt.title("Rewards")
-    plt.show()
 
-    plot_running_avg(totalrewards)
+    plotRewards("Luc Prieur's NN", totalrewards, N/10)
 
 
 def plot_running_avg(totalrewards):
