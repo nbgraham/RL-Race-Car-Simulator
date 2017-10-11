@@ -49,6 +49,6 @@ class Model:
         pi /= self.max_pi
 
         if np.random.random() < eps:
-            return random.randint(0, 10), pi
+            return random.randint(0, n_outputs-1), pi
         else:
             return np.argmax(pi), pi
