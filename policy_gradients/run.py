@@ -6,8 +6,8 @@ from gym import wrappers
 from datetime import datetime
 import cv2
 
-from luc_model import Model, create_nn
-from luc_preprocessing import compute_state
+from model import Model, create_nn
+from preprocessing import compute_state
 
 gamma = 0.99
 N = 102
