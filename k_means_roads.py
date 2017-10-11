@@ -59,13 +59,19 @@ if __name__ == "__main__":
     matrices = np.load(f)
     f.close()
 
-    group_means = k_means(10, matrices)
+    for i in [5,10,15,20]:
+        group_means = k_means(i, matrices)
+
+        f = open('road_means_' + str(i) + '.npy', 'wb')
+        np.save(f, group_means)
+        f.close()
+
 
     # for mean in group_means:
     #     plt.figure()
     #     plt.imshow(mean, vmin=0, vmax=1)
     # plt.show()
-    # 
+    #
     # f = open('roads_means.npy', 'wb')
     # np.save(f, group_means)
     # f.close()
