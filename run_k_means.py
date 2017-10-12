@@ -49,8 +49,11 @@ def main(k, n_episodes):
 def train(env, n_episodes, road_means, alpha, discount, load=True, save=True,  qvalfile='q_vals.pkl', rewardfile='reward.json'):
     state_action_value = {}
     if load:
-        f = open(qvalfile, 'rb')
-        state_action_value = pickle.load(f)
+        try:
+            f = open(qvalfile, 'rb')
+            state_action_value = pickle.load(f)
+        except FileNotFoundError:
+            print("No Q vals to load")
 
     rewards=[]
     for i_episode in range(n_episodes):
