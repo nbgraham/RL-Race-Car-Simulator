@@ -9,6 +9,7 @@ import sys
 
 import myplot
 import preprocessing as pre
+from k_means_roads import compute_new_k_means
 
 render = False # Does't work if false, observations are wrong
 
@@ -36,9 +37,13 @@ action_set = np.array([
 ])
 
 
-def main(k, n_episodes):
-    f = open('road_means_' + str(k) + '.npy','rb')
-    road_means = np.load(f)
+def main(k, n_episodes, new_means=False):
+    if not new_means:
+        f = open('road_means_' + str(k) + '.npy','rb')
+        road_means = np.load(f)
+    else:
+        road_means = compute_new_k_means(k)
+
 
     env = gym.make('CarRacing-v0')
     env = wrappers.Monitor(env, 'monitor-folder-'+str(k), force=True)
