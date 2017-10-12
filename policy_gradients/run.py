@@ -10,7 +10,7 @@ from model import Model, create_nn
 from preprocessing import compute_state
 
 gamma = 0.99
-N = 102
+N = 500
 eps_coeff=0.5 # first run was 0.5
 learning_rate = 0.01
 
