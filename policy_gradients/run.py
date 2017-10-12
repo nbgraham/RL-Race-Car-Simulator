@@ -42,7 +42,8 @@ def main():
     totalrewards = np.empty(N)
     costs = np.empty(N)
     for n in range(N):
-        eps = eps_coeff/np.sqrt(n+1)
+        eps_stretch=5
+        eps = np.sqrt(eps_stretch/(n+eps_stretch))
         totalreward, iters = play_one(env, model, eps, gamma)
         totalrewards[n] = totalreward
         if n % 1 == 0:
@@ -73,6 +74,13 @@ def plot_running_avg(totalrewards):
   plt.show()
 
 
+def get_env_action(argmax_pi):
+    action_selector = np.zeros((1,11))
+    action_selector[0,argmax_pi] = 1
+    action = np.dot(action_selector,action_set).ravel()
+    return action, action_selector
+
+
 def play_one(env, model, eps, gamma):
     observation = env.reset()
     done = False
@@ -86,29 +94,18 @@ def play_one(env, model, eps, gamma):
         state = compute_state(observation)
 
         argmax_pi, pi = model.sample_action(state, eps)
-
-        action_selector = np.zeros((1,11))
-        action_selector[0,argmax_pi] = 1
-        action = np.dot(action_selector,action_set).ravel()
-        print("Pi", pi)
-        print("Argmax", argmax_pi)
-        print("Action", action)
-
+        action, action_selector = get_env_action(argmax_pi)
         observation, reward, done, info = env.step(action)
 
         residual_reward = reward_decay*residual_reward + reward
 
-        tgt = target(residual_reward, action_selector, pi)
-        print("Target", tgt)
-
-        if iters%50:
-            print("Residual reward", residual_reward)
 
         prev_state = state
         state = compute_state(observation)
 
         # update the model
-        model.update(prev_state, tgt)
+        target = compute_target(residual_reward, action_selector, pi)
+        model.update(prev_state, target)
         totalreward += reward
         iters += 1
 
@@ -119,7 +116,7 @@ def play_one(env, model, eps, gamma):
     return totalreward, iters
 
 
-def target(residual_reward, action_selector, pi_vals):
+def compute_target(residual_reward, action_selector, pi_vals):
     scalar = residual_reward*2*learning_rate
     target = pi_vals + scalar*action_selector
     return target
