@@ -54,6 +54,16 @@ def dist_f(a,b):
     return np.sum(abs(a - b))
 
 
+def compute_new_k_means(k):
+    f = open('roads_matrix.npy','rb')
+    matrices = np.load(f)
+    f.close()
+
+    group_means = k_means(int(k), matrices)
+
+    return group_means
+
+
 if __name__ == "__main__":
     f = open('roads_matrix.npy','rb')
     matrices = np.load(f)
