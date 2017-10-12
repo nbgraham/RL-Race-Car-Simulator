@@ -39,7 +39,10 @@ class Model:
 
     def sample_action(self, state, eps):
         qval = self.predict(state)
-        if np.random.random() < eps:
-            return random.randint(0, 10), qval
-        else:
-            return np.argmax(qval), qval
+
+        prob = qval - np.min(qval)
+        prob = prob / np.sum(prob)
+
+        action_selection_index = np.random.choice(range(len(qval)), p=prob)
+
+        return action_selection_index, qval

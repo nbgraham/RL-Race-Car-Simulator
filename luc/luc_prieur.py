@@ -11,7 +11,7 @@ from luc_preprocessing import compute_state
 from myplot import plotRewards
 
 gamma = 0.99
-N = 1000
+N = 102
 eps_coeff=0.5 # initially 0.5
 
 def main():
