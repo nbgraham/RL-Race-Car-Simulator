@@ -4,11 +4,11 @@ import myplot
 
 
 def plot_luc():
-    f = open('luc/rewards.npy', 'rb')
+    f = open('policy_gradients/rewards.npy', 'rb')
     #open('rewards/rewards')
     rewards = np.load(f) #json.load(f)
 
-    myplot.plotRewards("Luc Prieur's Deep-Q Learning",rewards,100)
+    myplot.plotRewards("Luc Prieur's Deep-Q Learning",rewards,10)
 
 def plot_k_means(k):
     f = open('rewards/reward_' + str(k) + '.json' )
@@ -17,4 +17,4 @@ def plot_k_means(k):
     myplot.plotRewards("K=" + str(k) + " means Q Learning",rewards,100)
 
 if __name__ == "__main__":
-    plot_k_means(20)
+    plot_luc()
