@@ -33,7 +33,10 @@ action_set = np.array([
 ])
 
 
-def main():
+def main(softmax):
+    modelfile = 'race-car-prob.h5' if softmax else 'race-car.h5'
+    rewardfile = 'rewards-prob.npy' if softmax else 'rewards.npy'
+
     env = gym.make('CarRacing-v0')
     env = wrappers.Monitor(env, 'monitor-folder', force=True)
 
@@ -49,9 +52,9 @@ def main():
         if n % 1 == 0:
           print("episode:", n, "iters", iters, "total reward:", totalreward, "eps:", eps, "avg reward (last 100):", totalrewards[max(0, n-100):(n+1)].mean())
         if n % 10 == 0:
-            model.model.save('race-car.h5')
+            model.model.save(modelfile)
 
-            with open('rewards.npy', 'wb') as out_reward_file:
+            with open(rewardfile, 'wb') as out_reward_file:
                 np.save(out_reward_file, totalrewards)
 
     print("avg reward for last 100 episodes:", totalrewards[-100:].mean())
@@ -122,4 +125,4 @@ def compute_target(residual_reward, action_selector, pi_vals):
 
 
 if __name__ == "__main__":
-    main()
+    main(False)

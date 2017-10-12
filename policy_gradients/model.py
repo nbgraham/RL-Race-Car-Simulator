@@ -41,14 +41,18 @@ class Model:
         expect = (expected_output * self.max_pi) + self.min_q
         self.model.fit(state.reshape(-1, vector_size), np.array(expect).reshape(-1, 11), epochs=1, verbose=0)
 
-    def sample_action(self, state, eps):
+    def sample_action(self, state, eps, softmax=False):
         qval = self.predict(state)
         self.min_q = np.min(qval)
         pi = qval - self.min_q
-        self.max_pi = np.max(pi)
+        self.max_pi = np.sum(pi)
         pi /= self.max_pi
-        
-        if np.random.random() < eps:
-            return random.randint(0, n_outputs-1), pi
+
+        if softmax:
+            action_selection_index = np.random.choice(range(len(pi)), p=pi)
+            return action_selection_index, pi
         else:
-            return np.argmax(pi), pi
+            if np.random.random() < eps:
+                return random.randint(0, 10), pi
+            else:
+                return np.argmax(pi), pi
