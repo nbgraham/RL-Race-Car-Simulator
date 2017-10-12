@@ -45,10 +45,8 @@ class Model:
         qval = self.predict(state)
         self.min_q = np.min(qval)
         pi = qval - self.min_q
-        self.max_pi = np.max(pi)
+        self.max_pi = np.sum(pi)
         pi /= self.max_pi
 
-        if np.random.random() < eps:
-            return random.randint(0, n_outputs-1), pi
-        else:
-            return np.argmax(pi), pi
+        action_selection_index = np.random.choice(range(len(pi)), p=pi)
+        return action_selection_index, pi
