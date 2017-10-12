@@ -99,7 +99,6 @@ def play_one(env, model, eps, gamma):
 
         residual_reward = reward_decay*residual_reward + reward
 
-
         prev_state = state
         state = compute_state(observation)
 
