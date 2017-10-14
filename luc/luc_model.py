@@ -37,12 +37,18 @@ class Model:
     def update(self, state, expected_output):
         self.model.fit(state.reshape(-1, vector_size), np.array(expected_output).reshape(-1, 11), epochs=1, verbose=0)
 
-    def sample_action(self, state, eps):
+    def sample_action(self, state, eps, prob=False):
         qval = self.predict(state)
 
-        prob = qval - np.min(qval)
-        prob = prob / np.sum(prob)
+        if prob:
+            prob = qval - np.min(qval)
+            prob = prob / np.sum(prob)
 
-        action_selection_index = np.random.choice(range(len(qval)), p=prob)
+            action_selection_index = np.random.choice(range(len(qval)), p=prob)
 
-        return action_selection_index, qval
+            return action_selection_index, qval
+        else:
+            if np.random.random() < eps:
+                return random.randint(0, 10), qval
+            else:
+                return np.argmax(qval), qval
