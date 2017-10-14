@@ -16,6 +16,9 @@ def create_nn():
     model.add(Dense(512, init='lecun_uniform', input_shape=(vector_size,)))# 7x7 + 3.  or 14x14 + 3
     model.add(Activation('relu'))
 
+    model.add(Dense(64, init='lecun_uniform', input_shape=(vector_size,)))# 7x7 + 3.  or 14x14 + 3
+    model.add(Activation('relu'))
+
     model.add(Dense(11, init='lecun_uniform'))
     model.add(Activation('linear')) #linear output so we can have range of real-valued outputs
 
