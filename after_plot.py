@@ -25,4 +25,4 @@ def plot_k_means(k):
 
 
 if __name__ == "__main__":
-    plot_pg()
+    plot_luc()
