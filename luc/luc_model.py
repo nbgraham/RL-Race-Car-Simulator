@@ -6,7 +6,7 @@ from keras.utils import np_utils
 import numpy as np
 import random
 
-vector_size = 10*10 + 7 + 4
+vector_size = (10*10 + 7 + 4)*5
 
 def create_nn():
     if os.path.exists('race-car.h5'):
@@ -14,9 +14,6 @@ def create_nn():
 
     model = Sequential()
     model.add(Dense(512, init='lecun_uniform', input_shape=(vector_size,)))# 7x7 + 3.  or 14x14 + 3
-    model.add(Activation('relu'))
-
-    model.add(Dense(64, init='lecun_uniform', input_shape=(vector_size,)))# 7x7 + 3.  or 14x14 + 3
     model.add(Activation('relu'))
 
     model.add(Dense(11, init='lecun_uniform'))

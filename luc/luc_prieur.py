@@ -98,15 +98,26 @@ def play_one(env, model, eps, gamma):
     full_reward_received = False
     totalreward = 0
     iters = 0
+
+    cur_state = compute_state(observation)
+    prev_frames = [cur_state]*5
+
     while not done:
-        state = compute_state(observation)
+        cur_state = compute_state(observation)
+        prev_frames = prev_frames[1:]
+        prev_frames.append(cur_state)
+        state = np.hstack(prev_frames).ravel()
 
         argmax_qval, qval = model.sample_action(state, eps)
         action = convert_argmax_qval_to_env_action(argmax_qval)
         observation, reward, done, info = env.step(action)
 
         prev_state = state
-        state = compute_state(observation)
+
+        cur_state = compute_state(observation)
+        prev_frames = prev_frames[1:]
+        prev_frames.append(cur_state)
+        state = np.hstack(prev_frames).ravel()
 
         # update the model
         # standard Q learning TD(0)
