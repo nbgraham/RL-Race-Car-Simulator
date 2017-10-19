@@ -100,13 +100,13 @@ def play_one(env, model, eps, gamma):
     iters = 0
 
     cur_state = compute_state(observation)
-    prev_frames = [cur_state]*5
+    prev_frames = [cur_state]*15
 
     while not done:
         cur_state = compute_state(observation)
         prev_frames = prev_frames[1:]
         prev_frames.append(cur_state)
-        state = np.hstack(prev_frames).ravel()
+        state = np.hstack(prev_frames[0::3]).ravel()
 
         argmax_qval, qval = model.sample_action(state, eps)
         action = convert_argmax_qval_to_env_action(argmax_qval)
