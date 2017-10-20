@@ -120,7 +120,7 @@ def play_one(env, model, eps, gamma):
         cur_state = compute_state(observation)
         prev_frames = prev_frames[1:]
         prev_frames.append(cur_state)
-        state = np.hstack(prev_frames).ravel()
+        state = np.hstack(prev_frames[0::3]).ravel()
 
         # update the model
         # standard Q learning TD(0)
