@@ -20,6 +20,9 @@ def main(continue_from=0):
 
     model = Model(env)
 
+    plt.ion()
+    plt.show()
+
     totalrewards = np.empty(N)
     if continue_from > 0:
         f = open('rewards.npy', 'rb')
@@ -31,6 +34,10 @@ def main(continue_from=0):
         totalrewards[n] = totalreward
         if n % 1 == 0:
           print("episode:", n, "iters", iters, "total reward:", totalreward, "eps:", eps, "avg reward (last 100):", totalrewards[max(0, n-100):(n+1)].mean())
+          plt.plot(totalrewards)
+          plt.draw()
+          plt.pause(0.001)
+
         if n % 10 == 0:
             model.model.save('race-car.h5')
 
