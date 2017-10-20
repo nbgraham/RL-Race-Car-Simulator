@@ -11,18 +11,21 @@ from luc_preprocessing import compute_state
 from myplot import plotRewards
 
 gamma = 0.99
-N = 500
+N = 1001
 eps_coeff=0.5 # initially 0.5
 
-def main():
+def main(continue_from=0):
     env = gym.make('CarRacing-v0')
     env = wrappers.Monitor(env, 'monitor-folder', force=True)
 
     model = Model(env)
 
     totalrewards = np.empty(N)
+    if continue_from > 0:
+        f = open('rewards.npy', 'rb')
+        totalrewards = np.load(f)
     costs = np.empty(N)
-    for n in range(N):
+    for n in range(continue_from,N):
         eps = eps_coeff/np.sqrt(n+1 + 900)
         totalreward, iters = play_one(env, model, eps, gamma)
         totalrewards[n] = totalreward
