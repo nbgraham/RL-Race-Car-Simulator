@@ -12,7 +12,7 @@ from std_q.model import Model as StdQModel
 
 
 def decrease_linearly(value, value_start, value_end, result_start, result_end):
-    return (result_start-result_end)*(value-value_start)/(value_end - value_start) + result_start
+    return result_start - (result_start-result_end)*(value-value_start)/(value_end - value_start)
 
 
 class Model(StdQModel):
@@ -39,3 +39,8 @@ class Model(StdQModel):
             return decrease_linearly(cur_episode, 500, 900, 1, 0.1)
         else:
             return 0.1
+
+
+if __name__ == "__main__":
+    for i in range(1001):
+        print(i, Model.get_action_selection_parameter(i, 1001))
