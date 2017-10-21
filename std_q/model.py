@@ -5,6 +5,7 @@ from keras.optimizers import Adamax#,SGD, RMSprop, Adam
 from keras.utils import np_utils
 import numpy as np
 import random
+import math
 
 from std_q.hyperparameters import gamma
 
@@ -62,7 +63,7 @@ class Model:
         qval = self.predict(state)
 
         if softmax:
-            prob = [exp(q)/eps for q in qval]
+            prob = [math.exp(q)/eps for q in qval]
             prob = prob / np.sum(prob)
 
             action_selection_index = np.random.choice(range(len(qval)), p=prob)
