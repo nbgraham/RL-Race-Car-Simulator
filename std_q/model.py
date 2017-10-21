@@ -73,7 +73,8 @@ class Model:
         self.prev_qvals = qvals
         self.prev_argmax = argmax_qvals
 
-        return action
+        loss = change**2
+        return action, loss
 
     def get_action_selection_parameter(cur_episode, total_episodes):
         return action_selection_coeff/np.sqrt(cur_episode+1 + 900)

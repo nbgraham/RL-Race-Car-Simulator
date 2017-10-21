@@ -11,7 +11,6 @@ from myplot import plotRewards
 
 from softmax.model import Model
 from std_q.preprocessing import compute_state
-from softmax.eps import get_eps
 
 global_episode_n = 0
 
@@ -60,12 +59,18 @@ def save_last_episode(episode_filename, episode_n):
 def run_simulator(continue_from, N, name):
     model_filename = "race_car_" + name + ".h5"
     reward_filename = "rewards_" + name + ".npy"
+    loss_filename = "loss_" + name + ".npy"
     monitor_foldername = "monitor_folder_" + name
 
     env = gym.make('CarRacing-v0')
     env = wrappers.Monitor(env, monitor_foldername, force=True)
 
     model = Model(env, name)
+
+    totallosses = np.empty(N)
+    if continue_from > 0:
+        f = open(loss_filename, 'rb')
+        totallosses = np.load(f)
 
     totalrewards = np.empty(N)
     if continue_from > 0:
@@ -80,15 +85,18 @@ def run_simulator(continue_from, N, name):
         global_episode_n = n
         eps = Model.get_action_selection_parameter(n, N)
 
-        totalreward, iters = play_one(env, model, eps)
+        totalreward, iters, totalloss = play_one(env, model, eps)
         totalrewards[n] = totalreward
+        totallosses[n] = totalloss
 
-        print("episode:", n, "iters", iters, "total reward:", totalreward, "eps:", eps, "avg reward (last 100):", totalrewards[max(0, n-100):(n+1)].mean())
+        print("episode:", n, "eps:", eps, "iters", iters, "total loss:", totalloss, "avg loss (last 100):", totallosses[max(0, n-100):(n+1)].mean(), "total reward:", totalreward, "avg reward (last 100):", totalrewards[max(0, n-100):(n+1)].mean())
 
         if n % 10 == 0:
             model.model.save(model_filename)
             with open(reward_filename, 'wb') as out_reward_file:
                 np.save(out_reward_file, totalrewards)
+            with open(loss_filename, 'wb') as out_loss_file:
+                np.save(out_loss_file, totallosses)
 
             avg_rewards = [totalrewards[max(0, i-100):(i+1)].mean() for i in range(n)]
             plt.plot(avg_rewards)
@@ -117,24 +125,28 @@ def play_one(env, model, eps):
     done = False
     full_reward_received = False
     totalreward = 0
+    totalloss = 0
     iters = 0
+
     reward = 0
+
 
     while not done:
         state = compute_state(observation)
 
-        action = model.get_action(state, eps, reward)
+        action, loss = model.get_action(state, eps, reward)
 
         observation, reward, done, info = env.step(action)
 
         totalreward += reward
+        totalloss += loss
         iters += 1
 
         if iters > 1500:
             print("This episode is stuck")
             break
 
-    return totalreward, iters
+    return totalreward, iters, totalloss
 
 
 if __name__ == "__main__":
