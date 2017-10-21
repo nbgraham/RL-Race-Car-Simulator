@@ -11,7 +11,6 @@ def bottom_bar(observation):
     bottom_black_bar_bw = cv2.threshold(img, 1, 255, cv2.THRESH_BINARY)[1]
     # resize to 84 columns (width) * 12 rows (height) using nearest neighbor interpolation
     bottom_black_bar_bw = cv2.resize(bottom_black_bar_bw, (84, 12), interpolation = cv2.INTER_NEAREST)
-
     return bottom_black_bar_bw
 
 #https://gym.openai.com/evaluations/eval_BPzPoiBtQOCj8yItyHLhmg/
@@ -26,7 +25,6 @@ def above_bar(observation):
     above_bar_bw = cv2.resize(above_bar_bw,(10,10),interpolation=cv2.INTER_NEAREST)
     #set to float values between 0 and 1
     above_bar_bw = above_bar_bw.astype('float')/255
-
     return above_bar_bw
 
 def car_field(observation):
@@ -47,10 +45,6 @@ def compute_state(observation):
     above_bar_bw = above_bar(observation)
     car_field_t = car_field(observation)
     dashboard_values = get_dashboard_values(observation)
-
-    #print('car field t\n', car_field_t)
-    #print('above bar\n', above_bar_bw)
-    #print('dashboard values (steering, speed, gyro, abs1, abs2,abs3, abs4)\n', dashboard_values)
 
     #turn into 1d array for neural net
     state = np.concatenate((
@@ -79,6 +73,19 @@ def compute_steering_speed_gyro_abs(bottom_black_bar_gray_array):
     abs4 = bottom_black_bar_gray_array[:, 12][:-2].mean()/255
 
     return [steering, speed, gyro, abs1, abs2, abs3, abs4]
+
+def above_bar_no_resize(observation):
+    #getting above the black bar
+    above_bar = observation[:84,6:90]
+    #convert to gray
+    img = cv2.cvtColor(above_bar, cv2.COLOR_RGB2GRAY)
+    #if pixel > 120 set to white else black
+    # above_bar_bw = cv2.threshold(img,120,255,cv2.THRESH_BINARY)[1]
+    #set to float values between 0 and 1
+    # above_bar_bw = above_bar_bw.astype('float')/255
+    above_bar_bw = img.astype('float')/255
+    # print(above_bar_bw)
+    return np.resize(above_bar_bw,(84,84,1))
 
 
 def get_dashboard_values(observation):
