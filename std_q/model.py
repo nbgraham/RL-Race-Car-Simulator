@@ -58,11 +58,11 @@ class Model:
 
         return action
 
-    def sample_action(self, state, eps, prob=False):
+    def sample_action(self, state, eps, softmax=False):
         qval = self.predict(state)
 
-        if prob:
-            prob = qval - np.min(qval)
+        if softmax:
+            prob = [exp(q)/eps for q in qval]
             prob = prob / np.sum(prob)
 
             action_selection_index = np.random.choice(range(len(qval)), p=prob)
