@@ -3,7 +3,7 @@ import numpy as np
 import random
 import myplot as mp
 import preprocessing as pre
-import tensorflow as tf
+from simple_qnet import *
 from gym import wrappers
 
 env = gym.make('CarRacing-v0')
@@ -15,81 +15,28 @@ env = every_four_frames(env)
 
 num_episodes = 1000
 max_time_steps = 1500
-batch_size = 10
-action_time_steps = 1
 default_time_steps = 10
+# save_episodes = 25
 
 #learning parameters
 learning_rate = 0.001
 gamma = 0.99
-epsilon = 1 #starting at 1 so random all of the time (lowering as episodes increase)
-# epsilon = 0.1 #after 900 episodes
+epsilon = 1
 min_epsilon = 0.1
-
-action_set = np.array([
-#steering (left,right)
-[-1.0,0,0],
-[-0.75,0,0],
-[-0.5,0,0],
-[-0.25,0,0],
-[0,0,0],
-[0.25,0,0],
-[0.5,0,0],
-[0.75,0,0],
-[1.0,0,0],
-#gas
-[0,0.3,0],
-[0,0.5,0],
-#brake
-[0,0,0.8]
-])
-
-#network parameters
-num_input = 10*10+7+4 # size of list returned from preprocessing
-num_hidden = 512
-num_output = len(action_set)
-
-#tf graph input
-x = tf.placeholder("float",[None,num_input])
-
-#layers and weight bias
-weights = {
-    'hidden':tf.Variable(tf.random_normal([num_input,num_hidden])),
-    'output': tf.Variable(tf.random_normal([num_hidden, num_output]))
-}
-
-biases = {
-    'hidden': tf.Variable(tf.random_normal([num_hidden])),
-    'output': tf.Variable(tf.random_normal([num_output]))
-}
-
-#establish forward feed part of network to choose actions
-hidden = tf.nn.relu(tf.add(tf.matmul(x,weights['hidden']),biases['hidden']))
-qvals = tf.add(tf.matmul(hidden,weights['output']),biases['output'])
-
-#update model based on loss
-next_qvals = tf.placeholder("float",shape=[1,num_output])
-loss = tf.reduce_mean(tf.squared_difference(next_qvals,qvals))#mean squared error
-optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
-update_model = optimizer.minimize(loss)
+update_steps = 100
 
 init = tf.global_variables_initializer()
-
-saver = tf.train.Saver()
-model_path = "./model/car.ckpt"
-
-def get_env_action(nn_output, eps):
-    if np.random.random() < eps:
-        action_index = random.randint(0, len(action_set)-1)
-    else:
-        action_index = np.argmax(nn_output)
-    return action_set[action_index]
+# saver = tf.train.Saver()
+# model_path = "./model/car.ckpt"
 
 with tf.Session() as sess:
+    sqn = SQN()
     sess.run(init)
 
+
     totalrewards = np.empty(num_episodes)
-    totallosses = np.empty(num_episodes)
+    # totallosses = np.empty(num_episodes)
+
     for episode in range(num_episodes):
         #decrease epsilon every 10 episodes
         if (episode % 10 == 0 and epsilon >= min_epsilon):
@@ -97,44 +44,55 @@ with tf.Session() as sess:
 
         #reset for each episode
         observation = env.reset()
-        # prev_state = None
         done = False
         totalreward = 0
         timesteps = 0
-        totalloss = 0
+        # totalloss = 0
 
         #run episode until done (or until max time steps)
         while not done:
             env.render()
 
-            # cur_state = pre.compute_state(observation)
-            # state = cur_state - prev_state if prev_state is not None else np.zeros(num_input)
             state = pre.compute_state(observation)
 
-            q_values = sess.run(qvals, feed_dict={x: state.reshape(-1,num_input)})[0]
-            if timesteps < default_time_steps:
-                #default to gas
-                action = [0,0.8,0]
-            else:
-                action = get_env_action(q_values,epsilon)
+            action = sqn.selectAction(state,epsilon)
 
             observation, reward, done, info = env.step(action)
             prev_state = state
             state = pre.compute_state(observation)
 
-            q_prime = sess.run(qvals,feed_dict={x:state.reshape(-1,num_input)})[0]
-            if not done:
-                q_target = reward + gamma * np.max(q_prime)
-            else:#set terminal states to just the reward
-                q_target = reward
-            target = q_values[:]
-            target[np.argmax(q_values)] = q_target
+            #store experience in replay memory
+            sqn.storeExperience(prev_state,action,reward,state,done)
 
-            #using cost bc didn't want to overwrite loss function
-            _,cost = sess.run([update_model,loss],feed_dict={x:prev_state.reshape(-1,num_input),next_qvals:target.reshape(-1,num_output)})
+            #sample experiences from replay memory
+            minibatch = sqn.sampleExperiences()
+            state_batch = [experience[0] for experience in minibatch]
+            action_batch = [experience[1] for experience in minibatch]
+            reward_batch = [experience[2] for experience in minibatch]
+            nextstate_batch = [experience[3] for experience in minibatch]
+            terminal_batch = [experience[4] for experience in minibatch]
+
+            y_batch = []
+            q_batch = sess.run(sqn.targetQNet.qvals, feed_dict={sqn.targetQNet.stateInput: nextstate_batch})
+            for i in range(len(minibatch)):
+                terminal = terminal_batch[i]
+                if terminal:
+                    y_batch.append(reward_batch(i))
+                else:
+                    y_batch.append(reward_batch[i] + gamma * np.max(q_batch[i]))
 
 
-            totalloss += cost
+            currentQ_batch = sess.run(sqn.currentQNet.qvals,feed_dict={sqn.currentQNet.stateInput: state_batch})
+
+            sess.run(sqn.trainStep,feed_dict={sqn.yInput: y_batch, sqn.actionInput: action_batch, sqn.currentQNet.stateInput: state_batch})
+
+            #copy current qnet to target net
+            if timesteps % update_steps == 0:
+                sess.run(sqn.copyCurrentToTargetNet())
+
+
+
+            # totalloss += cost
             totalreward += reward
             timesteps += 1
 
@@ -142,16 +100,16 @@ with tf.Session() as sess:
                 print("too many time steps, breaking")
                 break
 
-        totallosses[episode] = totalloss
+        # totallosses[episode] = totalloss
         totalrewards[episode] = totalreward
         if episode % 1 == 0:
             print("episode:", episode, "timesteps:", timesteps, "total reward:", totalreward, "eps:", epsilon, "avg reward (last 100):",totalrewards[max(0,episode-100):(episode+1)].mean())
-        if episode % batch_size == 0:
-            save_path = saver.save(sess, model_path)
-            print("model saved in file: ", save_path,"\n")
+        # if episode % save_episodes == 0:
+            # save_path = saver.save(sess, model_path)
+            # print("model saved in file: ", save_path,"\n")
             #can load later with saver.restore(sess, model_path)
         print("avg reward for last 100 episodes:",totalrewards[-100:].mean())
         print("total steps:", totalrewards.sum())
 
-    mp.plotRewards("simple tf", totalrewards, int(num_episodes/10))
+    mp.plotRewards("simple qnet w/ experience replay", totalrewards, int(num_episodes/10))
     mp.show()
