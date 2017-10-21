@@ -6,17 +6,17 @@ import preprocessing as pre
 import tensorflow as tf
 from gym import wrappers
 
-
 ''' 
-first experiment:
+second experiment:
 simple q-learning agent
 
-ended up driving in circles
+changed action set from first experiment in attempt to
+prevent it from driving in circles the entire time
 '''
 env = gym.make('CarRacing-v0')
 env = wrappers.Monitor(env, 'monitor-folder', force=True)
 
-num_episodes = 1
+num_episodes = 1000
 max_time_steps = 1500
 batch_size = 10
 action_time_steps = 1
@@ -32,15 +32,19 @@ min_epsilon = 0.1
 action_set = np.array([
 #steering (left,right)
 [-1.0,0,0],
-[-0.5,0.2,0],
-[0.5,0.2,0],
+[-0.75,0,0],
+[-0.5,0,0],
+[-0.25,0,0],
+[0,0,0],
+[0.25,0,0],
+[0.5,0,0],
+[0.75,0,0],
 [1.0,0,0],
 #gas
 [0,0.3,0],
 [0,0.5,0],
-[0,0.8,0],
 #brake
-# [0,0,0.8]
+[0,0,0.8]
 ])
 
 #network parameters
