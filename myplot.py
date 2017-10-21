@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+import numpy as np
 
 def plotRewards(agent, rewards, radius):
     averagedRewards = calculateAveragedRewards(rewards, radius)
@@ -18,15 +19,7 @@ def plotRewards(agent, rewards, radius):
     plt.show()
 
 def calculateAveragedRewards(rewards, radius):
-    averagedRewards = []
-    for i in range(len(rewards)):
-        left = i - radius
-        if left < 0: left = 0
-        right = i + radius
-        if right > len(rewards): right = len(rewards)
-        selection = rewards[left:right+1]
-        average = sum(selection)/len(selection)
-        averagedRewards.append(average)
+    averagedRewards = [np.mean(rewards[max(i-radius,0):min(i+radius,len(rewards))]) for i in range(len(rewards))]
     return averagedRewards
 
 
