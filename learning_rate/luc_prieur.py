@@ -11,6 +11,7 @@ from luc_preprocessing import compute_state
 from myplot import plotRewards
 
 gamma = 0.99
+alpha = 0.1
 N = 1001
 eps_coeff=0.5 # initially 0.5
 
@@ -19,6 +20,9 @@ def main(continue_from=0):
     env = wrappers.Monitor(env, 'monitor-folder', force=True)
 
     model = Model(env)
+
+    plt.ion()
+    plt.show()
 
     totalrewards = np.empty(N)
     if continue_from > 0:
@@ -30,8 +34,13 @@ def main(continue_from=0):
         totalreward, iters = play_one(env, model, eps, gamma)
         totalrewards[n] = totalreward
         if n % 1 == 0:
-          print("episode:", n, "iters", iters, "total reward:", totalreward, "eps:", eps, "avg reward (last 100):", totalrewards[max(0, n-100):(n+1)].mean())
+          print("episode:", n, "iters", iters, "total reward:", totalreward, "eps:", eps, "avg reward (last 100):", [totalrewards[max(0, i-100):(i+1)].mean())
         if n % 10 == 0:
+            avg_rewards = [totalrewards[max(0, i-100):(i+1)].mean() for i in range(n)]
+            plt.plot(avg_rewards)
+            plt.draw()
+            plt.pause(0.001)
+            
             model.model.save('race-car.h5')
 
             with open('rewards.npy', 'wb') as out_reward_file:
@@ -102,14 +111,10 @@ def play_one(env, model, eps, gamma):
     totalreward = 0
     iters = 0
 
-    cur_state = compute_state(observation)
-    prev_frames = [cur_state]*15
+    state = compute_state(observation)
 
     while not done:
-        cur_state = compute_state(observation)
-        prev_frames = prev_frames[1:]
-        prev_frames.append(cur_state)
-        state = np.hstack(prev_frames[0::3]).ravel()
+        state = compute_state(observation)
 
         argmax_qval, qval = model.sample_action(state, eps)
         action = convert_argmax_qval_to_env_action(argmax_qval)
@@ -117,17 +122,15 @@ def play_one(env, model, eps, gamma):
 
         prev_state = state
 
-        cur_state = compute_state(observation)
-        prev_frames = prev_frames[1:]
-        prev_frames.append(cur_state)
-        state = np.hstack(prev_frames[0::3]).ravel()
+        state = compute_state(observation)
 
         # update the model
         # standard Q learning TD(0)
         next_qval = model.predict(state)
         G = reward + gamma*np.max(next_qval)
         y = qval[:]
-        y[argmax_qval] = G
+        change = G - y[argmax_qval]
+        y[argmax_qval] += alpha * change
         model.update(prev_state, y)
         totalreward += reward
         iters += 1

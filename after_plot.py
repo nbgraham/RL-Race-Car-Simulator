@@ -14,7 +14,7 @@ def plot_luc():
     f = open('luc/rewards.npy', 'rb')
     rewards = np.load(f)
 
-    myplot.plotRewards("Luc Prieur's Deep-Q Learning",rewards,10)
+    myplot.plotRewards("Last 5 frames Deep-Q Learning",rewards,20)
 
 
 def plot_k_means(k):

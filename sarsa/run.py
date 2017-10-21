@@ -6,8 +6,8 @@ from gym import wrappers
 from datetime import datetime
 import cv2
 
-from luc_model import Model, create_nn
-from luc_preprocessing import compute_state
+from model import Model, create_nn
+from preprocessing import compute_state
 from myplot import plotRewards
 
 gamma = 0.99
@@ -20,6 +20,9 @@ def main(continue_from=0):
 
     model = Model(env)
 
+    plt.ion()
+    plt.show()
+
     totalrewards = np.empty(N)
     if continue_from > 0:
         f = open('rewards.npy', 'rb')
@@ -31,6 +34,10 @@ def main(continue_from=0):
         totalrewards[n] = totalreward
         if n % 1 == 0:
           print("episode:", n, "iters", iters, "total reward:", totalreward, "eps:", eps, "avg reward (last 100):", totalrewards[max(0, n-100):(n+1)].mean())
+          plt.plot(totalrewards)
+          plt.draw()
+          plt.pause(0.001)
+
         if n % 10 == 0:
             model.model.save('race-car.h5')
 
@@ -102,32 +109,28 @@ def play_one(env, model, eps, gamma):
     totalreward = 0
     iters = 0
 
-    cur_state = compute_state(observation)
-    prev_frames = [cur_state]*15
+    state = compute_state(observation)
+
+    argmax_qval = 0
 
     while not done:
-        cur_state = compute_state(observation)
-        prev_frames = prev_frames[1:]
-        prev_frames.append(cur_state)
-        state = np.hstack(prev_frames[0::3]).ravel()
+        state = compute_state(observation)
 
-        argmax_qval, qval = model.sample_action(state, eps)
         action = convert_argmax_qval_to_env_action(argmax_qval)
         observation, reward, done, info = env.step(action)
 
         prev_state = state
 
-        cur_state = compute_state(observation)
-        prev_frames = prev_frames[1:]
-        prev_frames.append(cur_state)
-        state = np.hstack(prev_frames[0::3]).ravel()
+        state = compute_state(observation)
+
+        prev_argmax_qval = argmax_qval
+        argmax_qval, qval = model.sample_action(state, eps)
 
         # update the model
-        # standard Q learning TD(0)
         next_qval = model.predict(state)
-        G = reward + gamma*np.max(next_qval)
+        G = reward + gamma*next_qval[argmax_qval]
         y = qval[:]
-        y[argmax_qval] = G
+        y[prev_argmax_qval] = G
         model.update(prev_state, y)
         totalreward += reward
         iters += 1
