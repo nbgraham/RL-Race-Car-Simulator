@@ -9,9 +9,9 @@ from os import path
 
 from myplot import plotRewards
 
-from luc.luc_model import Model
-from luc.luc_preprocessing import compute_state
-from luc.eps import get_eps
+from std_q.model import Model
+from std_q.preprocessing import compute_state
+from std_q.eps import get_eps
 
 global_episode_n = 0
 
@@ -21,7 +21,7 @@ def main():
     episode_filename = "episode_file_" + name + ".txt"
 
     try:
-        continue_from = get_last_episode()
+        continue_from = get_last_episode(episode_filename)
         run_simulator(continue_from, N, name)
 
         save_last_episode(episode_filename, 0)
