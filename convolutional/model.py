@@ -19,12 +19,13 @@ def create_nn(name):
         return load_model(model_filename)
 
     model = Sequential()
-    model.add(Conv2D(32, kernel_size=(5, 5), strides=(1, 1),
+    model.add(Conv2D(32, kernel_size=(2, 2), strides=(1, 1),
                      activation='relu',
                      input_shape=(vector_size,)))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
-    model.add(Conv2D(64, (5, 5), activation='relu'))
+    model.add(Conv2D(64, kernel_size=(1, 1), stride=(1,1),
+                     activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     model.add(Flatten())
