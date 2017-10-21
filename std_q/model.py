@@ -6,7 +6,7 @@ from keras.utils import np_utils
 import numpy as np
 import random
 
-from luc.hyperparameters import gamma
+from std_q.hyperparameters import gamma
 
 vector_size = 10*10 + 7 + 4
 
@@ -34,6 +34,7 @@ class Model:
         self.model = create_nn()  # one feedforward nn for all actions.
         self.prev_state = None
         self.prev_qvals = None
+        self.prev_argmax = None
 
     def predict(self, state):
         return self.model.predict(state.reshape(-1, vector_size), verbose=0)[0]
@@ -45,18 +46,17 @@ class Model:
         argmax_qvals, qvals = self.sample_action(state, eps)
         action = Model.convert_argmax_qval_to_env_action(argmax_qvals)
 
-        if self.prev_state is not None and self.prev_qvals is not None:
-            next_qvals = self.predict(state)
-            G = reward + gamma*np.max(next_qvals)
+        if self.prev_state is not None and self.prev_qvals is not None and self.prev_argmax is not None:
+            G = reward + gamma*np.max(qvals)
             y = self.prev_qvals[:]
-            y[argmax_qvals] = G
+            y[self.prev_argmax] = G
             self.update(self.prev_state, y)
 
         self.prev_state = state
         self.prev_qvals = qvals
+        self.prev_argmax = argmax_qvals
 
         return action
-
 
     def sample_action(self, state, eps, prob=False):
         qval = self.predict(state)
