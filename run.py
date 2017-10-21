@@ -23,7 +23,7 @@ def main():
         print("Must give method name")
         return
     if len(sys.argv) > 2:
-        N = sys.argv[2]
+        N = int(sys.argv[2])
 
     episode_filename = "episode_file_" + name + ".txt"
     model_filename = "race_car_" + name + ".h5"
