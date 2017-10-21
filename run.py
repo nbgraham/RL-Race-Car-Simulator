@@ -13,10 +13,26 @@ from luc.luc_model import Model
 from luc.luc_preprocessing import compute_state
 from luc.eps import get_eps
 
-global_n = 0
+global_episode_n = 0
+
+
 def main():
-    N = 1001
+    name, N = get_params()
+    episode_filename = "episode_file_" + name + ".txt"
+
+    try:
+        continue_from = get_last_episode()
+        run_simulator(continue_from, N, name)
+
+        save_last_episode(episode_filename, 0)
+    except KeyboardInterrupt:
+        if global_episode_n != 0:
+            save_last_episode(episode_filename, global_episode_n)
+
+
+def get_params():
     name = ""
+    N = 1001
     if len(sys.argv) > 1:
         name = sys.argv[1]
     else:
@@ -25,21 +41,20 @@ def main():
     if len(sys.argv) > 2:
         N = int(sys.argv[2])
 
-    episode_filename = "episode_file_" + name + ".txt"
+    return name, N
 
-    try:
-        continue_from=0
-        if path.exists(episode_filename):
-            with open(episode_filename, "r") as episode_file:
-                continue_from = int(episode_file.read())
-        run_simulator(continue_from, N, name)
 
-        with open(episode_filename, "w") as episode_file:
-            episode_file.write("0")
-    except KeyboardInterrupt:
-        if global_n != -1:
-            with open(episode_filename, "w") as episode_file:
-                episode_file.write(str(global_n))
+def get_last_episode(episode_filename):
+    continue_from=0
+    if path.exists(episode_filename):
+        with open(episode_filename, "r") as episode_file:
+            continue_from = int(episode_file.read())
+    return continue_from
+
+
+def save_last_episode(episode_filename, episode_n):
+    with open(episode_filename, "w") as episode_file:
+        episode_file.write(str(episode_n))
 
 
 def run_simulator(continue_from, N, name):
@@ -62,7 +77,7 @@ def run_simulator(continue_from, N, name):
     plt.show()
 
     for n in range(continue_from,N):
-        global_n = n
+        global_episode_n = n
         eps = get_eps(n)
         totalreward, iters = play_one(env, model, eps)
         totalrewards[n] = totalreward
@@ -80,6 +95,7 @@ def run_simulator(continue_from, N, name):
             with open(reward_filename, 'wb') as out_reward_file:
                 np.save(out_reward_file, totalrewards)
 
+    global_episode_n = 0
     print("avg reward for last 100 episodes:", totalrewards[-100:].mean())
     print("total reward:", totalrewards.sum())
 
