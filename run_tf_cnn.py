@@ -9,11 +9,13 @@ from gym import wrappers
 ''' 
 fifth experiment:
 cnn q-learning agent
+
+uses target qnet and frame skipping
 '''
 
 env = gym.make('CarRacing-v0')
 env = wrappers.Monitor(env, 'monitor-folder', force=True)
-#repeats an action for 3 frames with env.step(action)
+
 action_time_steps = 3
 frame_skip = wrappers.SkipWrapper(action_time_steps)
 env = frame_skip(env)
