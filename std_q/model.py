@@ -31,6 +31,19 @@ def create_nn(name):
     return model
 
 
+def softmax_select(qval, temp):
+    prob = [math.exp(q/temp) for q in qval]
+    prob = prob / np.sum(prob)
+
+    softmax_selection_index = np.random.choice(range(len(qval)), p=prob)
+    return softmax_selection_index
+
+
+def eps_select(qval, eps):
+    eps_selection_index = random.randint(0,10) if np.random.random() < eps else np.argmax(qval)
+    return eps_selection_index
+
+
 class Model:
     def __init__(self, env, name):
         self.env = env
@@ -38,6 +51,8 @@ class Model:
         self.prev_state = None
         self.prev_qvals = None
         self.prev_argmax = None
+        self.eps_max = {}
+        self.softmax_max = {}
 
     def predict(self, state):
         return self.model.predict(state.reshape(-1, vector_size), verbose=0)[0]
@@ -62,23 +77,32 @@ class Model:
         return action
 
     def get_action_selection_parameter(cur_episode, total_episodes):
-        return action_selection_coeff/np.sqrt(episode_n+1 + 900)
+        return action_selection_coeff/np.sqrt(cur_episode+1 + 900)
 
-    def sample_action(self, state, eps, softmax=False):
+    def sample_action(self, state, action_selection_parameter, softmax=False):
         qval = self.predict(state)
 
+        max_selection_index = np.argmax(qval)
+        epss = {eps: eps_select(qval, eps) for eps in [0.1,0.5,0.9]}
+        temps = {temp: softmax_select(qval, temp) for temp in [0.1,1,10,100]}
+
+        for key,value in epss.items():
+            if key not in self.eps_max:
+                self.eps_max[key] = []
+            self.eps_max[key].append(1 if value == max_selection_index else 0)
+            print("With epsilon={}, chooses max action {}% of the time".format(key, round(np.mean(self.eps_max[key])*100, 2)))
+
+        for key,value in temps.items():
+            if key not in self.softmax_max:
+                self.softmax_max[key] = []
+            self.softmax_max[key].append(1 if value == max_selection_index else 0)
+            print("With temp={}, chooses max action {}% of the time".format(key, round(np.mean(self.softmax_max[key])*100, 2)))
+        print()
+
         if softmax:
-            prob = [math.exp(q)/eps for q in qval]
-            prob = prob / np.sum(prob)
-
-            action_selection_index = np.random.choice(range(len(qval)), p=prob)
-
-            return action_selection_index, qval
+            return softmax_select(qval, action_selection_parameter), qval
         else:
-            if np.random.random() < eps:
-                return random.randint(0, 10), qval
-            else:
-                return np.argmax(qval), qval
+            return eps_select(qval, action_selection_parameter), qval
 
     def convert_argmax_qval_to_env_action(output_value):
         # we reduce the action space to 15 values.  9 for steering, 6 for gas/brake.
