@@ -9,9 +9,9 @@ from os import path
 
 from myplot import plotRewards
 
-from std_q.model import Model
+from softmax.model import Model
 from std_q.preprocessing import compute_state
-from std_q.eps import get_eps
+from softmax.eps import get_eps
 
 global_episode_n = 0
 
@@ -85,15 +85,15 @@ def run_simulator(continue_from, N, name):
         print("episode:", n, "iters", iters, "total reward:", totalreward, "eps:", eps, "avg reward (last 100):", totalrewards[max(0, n-100):(n+1)].mean())
 
         if n % 10 == 0:
+            model.model.save(model_filename)
+            with open(reward_filename, 'wb') as out_reward_file:
+                print("Saving ", totalrewards)
+                np.save(out_reward_file, totalrewards)
+
             avg_rewards = [totalrewards[max(0, i-100):(i+1)].mean() for i in range(n)]
             plt.plot(avg_rewards)
             plt.draw()
             plt.pause(0.001)
-
-            model.model.save(model_filename)
-
-            with open(reward_filename, 'wb') as out_reward_file:
-                np.save(out_reward_file, totalrewards)
 
     global_episode_n = 0
     print("avg reward for last 100 episodes:", totalrewards[-100:].mean())
