@@ -1,15 +1,60 @@
 import numpy as np
 import cv2
 
-def bottom_bar(observation):
-    #https://gym.openai.com/evaluations/eval_BPzPoiBtQOCj8yItyHLhmg/
-    bottom_black_bar = observation[84:, 12:]
-    img = cv2.cvtColor(bottom_black_bar, cv2.COLOR_RGB2GRAY)
-    bottom_black_bar_bw = cv2.threshold(img, 1, 255, cv2.THRESH_BINARY)[1]
-    bottom_black_bar_bw = cv2.resize(bottom_black_bar_bw, (84, 12), interpolation = cv2.INTER_NEAREST)
 
+# https://gym.openai.com/evaluations/eval_BPzPoiBtQOCj8yItyHLhmg/
+def bottom_bar(observation):
+    bottom_black_bar = observation[84:, 12:]
+    # convert to gray
+    img = cv2.cvtColor(bottom_black_bar, cv2.COLOR_RGB2GRAY)
+    #if pixel value > 1 set to white else black
+    bottom_black_bar_bw = cv2.threshold(img, 1, 255, cv2.THRESH_BINARY)[1]
+    # resize to 84 columns (width) * 12 rows (height) using nearest neighbor interpolation
+    bottom_black_bar_bw = cv2.resize(bottom_black_bar_bw, (84, 12), interpolation = cv2.INTER_NEAREST)
     return bottom_black_bar_bw
 
+#https://gym.openai.com/evaluations/eval_BPzPoiBtQOCj8yItyHLhmg/
+def above_bar(observation):
+    #getting above the black bar and cropping from the sides (originally 96, now 84, giving a square)
+    above_bar = observation[:84,6:90]
+    #convert to gray
+    img = cv2.cvtColor(above_bar, cv2.COLOR_RGB2GRAY)
+    #if pixel > 120 set to white else black
+    above_bar_bw = cv2.threshold(img,120,255,cv2.THRESH_BINARY)[1]
+    #resize to 10 columns (width) * 10 rows (height) using nearest neighbor interpolation
+    above_bar_bw = cv2.resize(above_bar_bw,(10,10),interpolation=cv2.INTER_NEAREST)
+    #set to float values between 0 and 1
+    above_bar_bw = above_bar_bw.astype('float')/255
+    return above_bar_bw
+
+def car_field(observation):
+    #getting location of car (columns, rows)
+    car_field = observation[66:78, 43:53]
+    #convert to gray
+    img = cv2.cvtColor(car_field, cv2.COLOR_RGB2GRAY)
+    #if pixel > 80 set to white else black
+    car_field_bw = cv2.threshold(img, 80, 255, cv2.THRESH_BINARY)[1]
+    #print('car field bw\n', car_field_bw)
+    #average of columns 3, 4, 5 and 6 (the columns where the car is in the car field)
+    car_field_t = [car_field_bw[:, 3].mean() / 255, car_field_bw[:, 4].mean() / 255, car_field_bw[:, 5].mean() / 255,
+                   car_field_bw[:, 6].mean() / 255]
+
+    return car_field_t
+
+def compute_state(observation):
+    above_bar_bw = above_bar(observation)
+    car_field_t = car_field(observation)
+    dashboard_values = get_dashboard_values(observation)
+
+    #turn into 1d array for neural net
+    state = np.concatenate((
+        np.array([dashboard_values]).reshape(1,-1).flatten(),
+        above_bar_bw.reshape(1,-1).flatten(),
+        car_field_t),axis=0)
+
+    #print('state\n', state)
+
+    return state
 
 #https://gym.openai.com/evaluations/eval_BPzPoiBtQOCj8yItyHLhmg/
 def compute_steering_speed_gyro_abs(bottom_black_bar_gray_array):
@@ -29,11 +74,25 @@ def compute_steering_speed_gyro_abs(bottom_black_bar_gray_array):
 
     return [steering, speed, gyro, abs1, abs2, abs3, abs4]
 
+def above_bar_no_resize(observation):
+    #getting above the black bar
+    above_bar = observation[:84,6:90]
+    #convert to gray
+    img = cv2.cvtColor(above_bar, cv2.COLOR_RGB2GRAY)
+    #if pixel > 120 set to white else black
+    # above_bar_bw = cv2.threshold(img,120,255,cv2.THRESH_BINARY)[1]
+    #set to float values between 0 and 1
+    # above_bar_bw = above_bar_bw.astype('float')/255
+    above_bar_bw = img.astype('float')/255
+    # print(above_bar_bw)
+    return np.resize(above_bar_bw,(84,84,1))
+
 
 def get_dashboard_values(observation):
     bottom_black_bar_gray_array = bottom_bar(observation)
     dashboard_values = compute_steering_speed_gyro_abs(bottom_black_bar_gray_array)
     return dashboard_values
+
 
 def focus_middle(observation):
     car_road_gray = cropped_grayscale_car_road(observation)
@@ -73,6 +132,7 @@ def cropped_grayscale_car_road(observation):
     car_road_gray = just_car_road(gray)
 
     return car_road_gray
+
 
 def just_car_road(gray):
     gray[gray<60] = 0

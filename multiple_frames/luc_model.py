@@ -13,9 +13,12 @@ def create_nn():
         return load_model('race-car.h5')
 
     model = Sequential()
+    #fully connected layer with 512 outputs (input is the number of pixels)
+    #relu activation (anything below 0 is set to 0)
     model.add(Dense(512, init='lecun_uniform', input_shape=(vector_size,)))# 7x7 + 3.  or 14x14 + 3
     model.add(Activation('relu'))
 
+    #output layer (input is previous layer)
     model.add(Dense(11, init='lecun_uniform'))
     model.add(Activation('linear')) #linear output so we can have range of real-valued outputs
 
