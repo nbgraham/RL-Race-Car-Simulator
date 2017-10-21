@@ -7,7 +7,7 @@ import numpy as np
 import random
 import math
 
-from std_q.hyperparameters import gamma, action_selection_coeff
+from std_q.hyperparameters import gamma, action_selection_coeff, alpha
 
 vector_size = 10*10 + 7 + 4
 
@@ -65,7 +65,8 @@ class Model:
         if self.prev_state is not None and self.prev_qvals is not None and self.prev_argmax is not None:
             G = reward + gamma*np.max(qvals)
             y = self.prev_qvals[:]
-            y[self.prev_argmax] = G
+            change = G - y[self.prev_argmax]
+            y[self.prev_argmax] += alpha*change
             self.update(self.prev_state, y)
 
         self.prev_state = state
