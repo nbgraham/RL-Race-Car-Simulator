@@ -61,7 +61,8 @@ class Model:
     def get_action(self, state, eps, reward):
         argmax_qvals, qvals = self.sample_action(state, eps)
         action = Model.convert_argmax_qval_to_env_action(argmax_qvals)
-
+        change = 0
+        
         if self.prev_state is not None and self.prev_qvals is not None and self.prev_argmax is not None:
             G = reward + gamma*np.max(qvals)
             y = self.prev_qvals[:]
