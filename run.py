@@ -26,14 +26,13 @@ def main():
         N = int(sys.argv[2])
 
     episode_filename = "episode_file_" + name + ".txt"
-    model_filename = "race_car_" + name + ".h5"
-    reward_filename = "rewards_" + name + ".npy"
+
     try:
         continue_from=0
         if path.exists(episode_filename):
             with open(episode_filename, "r") as episode_file:
                 continue_from = int(episode_file.read())
-        run_simulator(continue_from, N, model_filename, reward_filename)
+        run_simulator(continue_from, N, name)
 
         with open(episode_filename, "w") as episode_file:
             episode_file.write("0")
@@ -43,9 +42,13 @@ def main():
                 episode_file.write(str(global_n))
 
 
-def run_simulator(continue_from, N, model_filename, reward_filename):
+def run_simulator(continue_from, N, name):
+    model_filename = "race_car_" + name + ".h5"
+    reward_filename = "rewards_" + name + ".npy"
+    monitor_foldername = "monitor_folder_" + name
+
     env = gym.make('CarRacing-v0')
-    env = wrappers.Monitor(env, 'monitor-folder', force=True)
+    env = wrappers.Monitor(env, monitor_foldername, force=True)
 
     model = Model(env)
 
