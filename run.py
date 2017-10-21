@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from gym import wrappers
 from datetime import datetime
 import cv2
+from os import path
 
 from myplot import plotRewards
 
@@ -28,9 +29,11 @@ def main():
     model_filename = "race_car_" + name + ".h5"
     reward_filename = "rewards_" + name + ".npy"
     try:
-        with open(episode_filename, "r") as episode_file:
-            continue_from = int(episode_file.read())
-            run_simulator(continue_from, N, model_filename, reward_filename)
+        continue_from=0
+        if path.exists(episode_filename):
+            with open(episode_filename, "r") as episode_file:
+                continue_from = int(episode_file.read())
+        run_simulator(continue_from, N, model_filename, reward_filename)
 
         with open(episode_filename, "w") as episode_file:
             episode_file.write("0")
