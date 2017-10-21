@@ -6,49 +6,21 @@ from keras.utils import np_utils
 import numpy as np
 import random
 
-vector_size = 10*10 + 7 + 4
+from std_q.model import Model as StdQModel
 
-def create_nn():
-    if os.path.exists('race-car.h5'):
-        return load_model('race-car.h5')
+class Model(StdQModel):
+    def get_action(self, state, eps, reward):
+        argmax_qvals, qvals = self.sample_action(state, eps)
+        action = Model.convert_argmax_qval_to_env_action(argmax_qvals)
 
-    model = Sequential()
-    model.add(Dense(512, init='lecun_uniform', input_shape=(vector_size,)))# 7x7 + 3.  or 14x14 + 3
-    model.add(Activation('relu'))
+        if self.prev_state is not None and self.prev_qvals is not None and self.prev_argmax is not None:
+            G = reward + gamma*qvals[argmax_qvals]
+            y = self.prev_qvals[:]
+            y[self.prev_argmax] = G
+            self.update(self.prev_state, y)
 
-    model.add(Dense(11, init='lecun_uniform'))
-    model.add(Activation('linear')) #linear output so we can have range of real-valued outputs
+        self.prev_state = state
+        self.prev_qvals = qvals
+        self.prev_argmax = argmax_qvals
 
-    adamax = Adamax() #Adamax(lr=0.001)
-    model.compile(loss='mse', optimizer=adamax)
-    model.summary()
-
-    return model
-
-
-class Model:
-    def __init__(self, env):
-        self.env = env
-        self.model = create_nn()  # one feedforward nn for all actions.
-
-    def predict(self, state):
-        return self.model.predict(state.reshape(-1, vector_size), verbose=0)[0]
-
-    def update(self, state, expected_output):
-        self.model.fit(state.reshape(-1, vector_size), np.array(expected_output).reshape(-1, 11), epochs=1, verbose=0)
-
-    def sample_action(self, state, eps, prob=False):
-        qval = self.predict(state)
-
-        if prob:
-            prob = qval - np.min(qval)
-            prob = prob / np.sum(prob)
-
-            action_selection_index = np.random.choice(range(len(qval)), p=prob)
-
-            return action_selection_index, qval
-        else:
-            if np.random.random() < eps:
-                return random.randint(0, 10), qval
-            else:
-                return np.argmax(qval), qval
+        return action
