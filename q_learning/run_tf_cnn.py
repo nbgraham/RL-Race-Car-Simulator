@@ -22,8 +22,8 @@ env = frame_skip(env)
 
 num_episodes = 1000
 max_time_steps = 1500
-batch_size = 10
-update_time_steps = 10
+# batch_size = 10
+update_time_steps = 100
 
 #learning parameters
 learning_rate = 0.01
@@ -141,7 +141,7 @@ with tf.Session() as sess:
 
         #reset for each episode
         observation = env.reset()
-        state = pre.above_bar_no_resize(observation)
+        state = pre.above_bar_cnn(observation)
         state = np.stack((state,state,state,state),axis=2).reshape(84,84,4)
 
         done = False
@@ -153,7 +153,7 @@ with tf.Session() as sess:
         while not done:
             env.render()
 
-            # state = pre.above_bar_no_resize(observation)
+            # state = pre.above_bar_cnn(observation)
 
             #select action using current qnet
             q_values = sess.run(cnet.qvals, feed_dict={cnet.stateInput: [state]})[0]
@@ -163,7 +163,7 @@ with tf.Session() as sess:
             observation, reward, done, info = env.step(action)
 
             prev_state = state
-            state = pre.above_bar_no_resize(observation)
+            state = pre.above_bar_cnn(observation)
             state = np.append(state,prev_state,axis=2)[:,:,1:]
 
 
