@@ -54,3 +54,13 @@ def compute_steering_speed_gyro_abs(black_bar_pixel_matrix):
     abs4 = black_bar_pixel_matrix[:, 12][:-2].mean()/255
 
     return [steering, speed, gyro, abs1, abs2, abs3, abs4]
+
+#this function gets above the black bar for the cnn state input
+def above_bar_cnn(observation):
+    above_bar = observation[:84,6:90]
+    img = cv2.cvtColor(above_bar, cv2.COLOR_RGB2GRAY)
+    #if pixel > 120 set to white else black
+    # above_bar_bw = cv2.threshold(img,120,255,cv2.THRESH_BINARY)[1]
+    # above_bar_bw = above_bar_bw.astype('float')/255
+    above_bar_bw = img.astype('float')/255
+    return np.resize(above_bar_bw,(84,84,1))
