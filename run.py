@@ -71,7 +71,7 @@ def run_simulator(continue_from, N, model_filename, reward_filename):
 
             model.model.save(model_filename)
 
-            with open(reward_filename), 'wb') as out_reward_file:
+            with open(reward_filename, 'wb') as out_reward_file:
                 np.save(out_reward_file, totalrewards)
 
     print("avg reward for last 100 episodes:", totalrewards[-100:].mean())
