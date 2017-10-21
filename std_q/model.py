@@ -61,7 +61,7 @@ class Model:
 
         return action
 
-    def get_action_selection_parameter(cur_episode_total_episodes):
+    def get_action_selection_parameter(cur_episode, total_episodes):
         return action_selection_coeff/np.sqrt(episode_n+1 + 900)
 
     def sample_action(self, state, eps, softmax=False):
