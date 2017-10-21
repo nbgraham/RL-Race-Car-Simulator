@@ -11,10 +11,11 @@ from std_q.hyperparameters import gamma
 
 vector_size = 10*10 + 7 + 4
 
-def create_nn():
-    if os.path.exists('race_car_std_q.h5'):
+def create_nn(name):
+    model_filename = "race_car_" + name + "h5"
+    if os.path.exists(model_filename):
         print("Loading existing model")
-        return load_model('race_car_std_q.h5')
+        return load_model(model_filename)
 
     model = Sequential()
     model.add(Dense(512, init='lecun_uniform', input_shape=(vector_size,)))# 7x7 + 3.  or 14x14 + 3
@@ -31,9 +32,9 @@ def create_nn():
 
 
 class Model:
-    def __init__(self, env):
+    def __init__(self, env, name):
         self.env = env
-        self.model = create_nn()  # one feedforward nn for all actions.
+        self.model = create_nn(name)  # one feedforward nn for all actions.
         self.prev_state = None
         self.prev_qvals = None
         self.prev_argmax = None

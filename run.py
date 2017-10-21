@@ -65,7 +65,7 @@ def run_simulator(continue_from, N, name):
     env = gym.make('CarRacing-v0')
     env = wrappers.Monitor(env, monitor_foldername, force=True)
 
-    model = Model(env)
+    model = Model(env, name)
 
     totalrewards = np.empty(N)
     if continue_from > 0:
@@ -87,7 +87,6 @@ def run_simulator(continue_from, N, name):
         if n % 10 == 0:
             model.model.save(model_filename)
             with open(reward_filename, 'wb') as out_reward_file:
-                print("Saving ", totalrewards)
                 np.save(out_reward_file, totalrewards)
 
             avg_rewards = [totalrewards[max(0, i-100):(i+1)].mean() for i in range(n)]
