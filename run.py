@@ -78,7 +78,8 @@ def run_simulator(continue_from, N, name):
 
     for n in range(continue_from,N):
         global_episode_n = n
-        eps = get_eps(n)
+        eps = Model.get_action_selection_parameter(n, N)
+
         totalreward, iters = play_one(env, model, eps)
         totalrewards[n] = totalreward
 
@@ -97,6 +98,8 @@ def run_simulator(continue_from, N, name):
     global_episode_n = 0
     print("avg reward for last 100 episodes:", totalrewards[-100:].mean())
     print("total reward:", totalrewards.sum())
+
+    plot_running_avg(totalrewards)
 
 
 def plot_running_avg(totalrewards):

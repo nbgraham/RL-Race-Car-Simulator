@@ -7,7 +7,7 @@ import numpy as np
 import random
 import math
 
-from std_q.hyperparameters import gamma
+from std_q.hyperparameters import gamma, action_selection_coeff
 
 vector_size = 10*10 + 7 + 4
 
@@ -60,6 +60,9 @@ class Model:
         self.prev_argmax = argmax_qvals
 
         return action
+
+    def get_action_selection_parameter(cur_episode_total_episodes):
+        return action_selection_coeff/np.sqrt(episode_n+1 + 900)
 
     def sample_action(self, state, eps, softmax=False):
         qval = self.predict(state)
