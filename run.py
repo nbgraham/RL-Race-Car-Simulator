@@ -15,23 +15,32 @@ from luc.eps import get_eps
 global_n = 0
 def main():
     N = 1001
+    name = ""
     if len(sys.argv) > 1:
-        N = int(sys.argv[1])
+        name = sys.argv[1]
+    else:
+        print("Must give method name")
+        return
+    if len(sys.argv) > 2:
+        N = sys.argv[2]
 
+    episode_filename = "episode_file_" + name + ".txt"
+    model_filename = "race_car_" + name + ".h5"
+    reward_filename = "rewards_" + name + ".npy"
     try:
-        with open("episode_file.txt", "r") as episode_file:
+        with open(episode_filename, "r") as episode_file:
             continue_from = int(episode_file.read())
-            run_simulator(continue_from, N)
+            run_simulator(continue_from, N, model_filename, reward_filename)
 
-        with open("episode_file.txt", "w") as episode_file:
+        with open(episode_filename, "w") as episode_file:
             episode_file.write("0")
     except KeyboardInterrupt:
         if global_n != -1:
-            with open("episode_file.txt", "w") as episode_file:
+            with open(episode_filename, "w") as episode_file:
                 episode_file.write(str(global_n))
 
 
-def run_simulator(continue_from, N):
+def run_simulator(continue_from, N, model_filename, reward_filename):
     env = gym.make('CarRacing-v0')
     env = wrappers.Monitor(env, 'monitor-folder', force=True)
 
@@ -60,13 +69,13 @@ def run_simulator(continue_from, N):
             plt.draw()
             plt.pause(0.001)
 
-            model.model.save('race-car.h5')
+            model.model.save(model_filename)
 
-            with open('rewards.npy', 'wb') as out_reward_file:
+            with open(reward_filename), 'wb') as out_reward_file:
                 np.save(out_reward_file, totalrewards)
 
     print("avg reward for last 100 episodes:", totalrewards[-100:].mean())
-    print("total steps:", totalrewards.sum())
+    print("total reward:", totalrewards.sum())
 
 
 def plot_running_avg(totalrewards):
