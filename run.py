@@ -69,7 +69,7 @@ def run_simulator(continue_from, N, name):
 
     totalrewards = np.empty(N)
     if continue_from > 0:
-        f = open('rewards.npy', 'rb')
+        f = open(reward_filename, 'rb')
         totalrewards = np.load(f)
     costs = np.empty(N)
 
