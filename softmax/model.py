@@ -11,6 +11,10 @@ from softmax.hyperparameters import gamma
 from std_q.model import Model as StdQModel
 
 
+def decrease_linearly(value, value_start, value_end, result_start, result_end):
+    return (result_start-result_end)*(value-value_start)/(value_end - value_start) + result_start
+
+
 class Model(StdQModel):
     def get_action(self, state, eps, reward):
         argmax_qvals, qvals = self.sample_action(state, eps, softmax=True)
@@ -27,3 +31,11 @@ class Model(StdQModel):
         self.prev_argmax = argmax_qvals
 
         return action
+
+    def get_action_selection_parameter(cur_episode, total_episodes):
+        if cur_episode < 500:
+            return decrease_linearly(cur_episode, 0, 500, 100, 1)
+        elif cur_episode < 900:
+            return decrease_linearly(cur_episode, 500, 900, 1, 0.1)
+        else:
+            return 0.1
