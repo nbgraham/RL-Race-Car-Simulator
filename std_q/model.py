@@ -51,8 +51,6 @@ class Model:
         self.prev_state = None
         self.prev_qvals = None
         self.prev_argmax = None
-        self.eps_max = {}
-        self.softmax_max = {}
 
     def predict(self, state):
         return self.model.predict(state.reshape(-1, vector_size), verbose=0)[0]
@@ -81,23 +79,6 @@ class Model:
 
     def sample_action(self, state, action_selection_parameter, softmax=False):
         qval = self.predict(state)
-
-        max_selection_index = np.argmax(qval)
-        epss = {eps: eps_select(qval, eps) for eps in [0.1,0.5,0.9]}
-        temps = {temp: softmax_select(qval, temp) for temp in [0.1,1,10,100]}
-
-        for key,value in epss.items():
-            if key not in self.eps_max:
-                self.eps_max[key] = []
-            self.eps_max[key].append(1 if value == max_selection_index else 0)
-            print("With epsilon={}, chooses max action {}% of the time".format(key, round(np.mean(self.eps_max[key])*100, 2)))
-
-        for key,value in temps.items():
-            if key not in self.softmax_max:
-                self.softmax_max[key] = []
-            self.softmax_max[key].append(1 if value == max_selection_index else 0)
-            print("With temp={}, chooses max action {}% of the time".format(key, round(np.mean(self.softmax_max[key])*100, 2)))
-        print()
 
         if softmax:
             return softmax_select(qval, action_selection_parameter), qval
