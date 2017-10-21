@@ -1,28 +1,28 @@
 import numpy as np
 import json
 import myplot
+import sys
 
+def main():
+    name = "std_q"
+    if len(sys.argv) > 1:
+        name = sys.argv[1]
 
-def plot_pg():
-    f = open('policy_gradients/rewards.npy', 'rb')
-    rewards = np.load(f)
+    reward_file = open('rewards_' + name + '.npy', 'rb')
+    rewards = np.load(reward_file)
 
-    myplot.plotRewards("Policy Gradient Deep-Q Learning",rewards,10)
+    radius = int(len(rewards)/10)
+    if len(sys.argv) > 2:
+        r = int(sys.argv[2])
+        if r > 0:
+            radius = r
 
+    display_name = name
+    if len(sys.argv) > 3:
+        display_name = " ".join(sys.argv[3:])
 
-def plot_luc():
-    f = open('luc/rewards.npy', 'rb')
-    rewards = np.load(f)
-
-    myplot.plotRewards("Last 5 frames Deep-Q Learning",rewards,20)
-
-
-def plot_k_means(k):
-    f = open('rewards/reward_' + str(k) + '.json' )
-    rewards = json.load(f)
-
-    myplot.plotRewards("K=" + str(k) + " means Q Learning",rewards,100)
+    myplot.plotRewards(display_name + " Learning",rewards,radius)
 
 
 if __name__ == "__main__":
-    plot_luc()
+    main()
