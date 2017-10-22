@@ -11,6 +11,9 @@ def main():
     reward_file = open('rewards_' + name + '.npy', 'rb')
     rewards = np.load(reward_file)
 
+    loss_file = open('loss_' + name + '.npy', 'rb')
+    losses = np.load(loss_file)
+
     radius = int(len(rewards)/10)
     if len(sys.argv) > 2:
         r = int(sys.argv[2])
@@ -22,6 +25,8 @@ def main():
         display_name = " ".join(sys.argv[3:])
 
     myplot.plotRewards(display_name + " Learning",rewards,radius)
+
+    myplot.plotLoss(display_name + " Learning", losses, radius)
 
 
 if __name__ == "__main__":
