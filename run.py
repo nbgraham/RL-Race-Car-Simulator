@@ -3,11 +3,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from gym import wrappers
-from datetime import datetime
-import cv2
 from os import path
-
-from myplot import plotRewards
 
 from std_q.model import Model
 from std_q.preprocessing import compute_state
@@ -76,7 +72,6 @@ def run_simulator(continue_from, N, name):
     if continue_from > 0:
         f = open(reward_filename, 'rb')
         totalrewards = np.load(f)
-    costs = np.empty(N)
 
     plt.ion()
     plt.show()
@@ -129,7 +124,6 @@ def plot_running_avg(totalrewards):
 def play_one(env, model, eps):
     observation = env.reset()
     done = False
-    full_reward_received = False
     totalreward = 0
     totalloss = 0
     iters = 0
