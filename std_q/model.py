@@ -31,8 +31,14 @@ def create_nn(name):
     return model
 
 
+def sigmoid(x):
+    return 1/(1+math.exp(-x))
+
+
 def softmax_select(qval, temp):
-    prob = [math.exp(q/temp) for q in qval]
+    squash = [sigmoid(x) for x in qval]
+
+    prob = [math.exp(q/temp) for q in squash]
     prob = prob / np.sum(prob)
 
     softmax_selection_index = np.random.choice(range(len(qval)), p=prob)
@@ -51,6 +57,8 @@ class Model:
         self.prev_state = None
         self.prev_qvals = None
         self.prev_argmax = None
+        self.chose_max = []
+        self.count = 0
 
     def predict(self, state):
         return self.model.predict(state.reshape(-1, vector_size), verbose=0)[0]
@@ -60,6 +68,7 @@ class Model:
 
     def get_action(self, state, eps, reward):
         argmax_qvals, qvals = self.sample_action(state, eps)
+
         action = Model.convert_argmax_qval_to_env_action(argmax_qvals)
         change = 0
         
