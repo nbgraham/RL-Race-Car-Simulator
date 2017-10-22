@@ -18,6 +18,14 @@ def decrease_linearly(value, value_start, value_end, result_start, result_end):
 class Model(StdQModel):
     def get_action(self, state, eps, reward):
         argmax_qvals, qvals = self.sample_action(state, eps, softmax=True)
+
+        self.chose_max.append(1 if argmax_qvals == np.argmax(qvals) else 0)
+
+        self.count += 1
+        if self.count == 500:
+            self.count = 0
+            print("Average choosing max {}%", round(np.mean(self.chose_max)*100,2))
+
         action = Model.convert_argmax_qval_to_env_action(argmax_qvals)
         change = 0
 
@@ -37,12 +45,7 @@ class Model(StdQModel):
         return action, loss
 
     def get_action_selection_parameter(cur_episode, total_episodes):
-        if cur_episode < 500:
-            return decrease_linearly(cur_episode, 0, 500, 100, 1)
-        elif cur_episode < 900:
-            return decrease_linearly(cur_episode, 500, 900, 1, 0.1)
-        else:
-            return 0.1
+        return 0.01
 
 
 if __name__ == "__main__":
