@@ -20,6 +20,25 @@ def plotRewards(agent, rewards, radius):
 
     plt.show()
 
+def plotLoss(agent, rewards, radius):
+    averagedRewards = calculateAveragedRewards(rewards, radius)
+    averagePrevRewards = calculateAveragedRewardsPrevious(rewards, radius)
+
+    ax = plt.figure().gca()
+
+    plt.plot(rewards, label="Loss per episode")
+    plt.plot(averagedRewards,label="Averaged Loss (r={})".format(radius))
+    plt.plot(averagePrevRewards, label="Averaged Loss last {} episodes".format(radius) )
+
+    plt.xlabel('Episode')
+    plt.ylabel('Loss')
+    plt.title('Loss per Episode for {} agent'.format(agent))
+    plt.legend()
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+    plt.show()
+
+
 
 def calculateAveragedRewards(rewards, radius):
     averagedRewards = [np.mean(rewards[max(i-radius,0):min(i+radius,len(rewards))]) for i in range(len(rewards))]
