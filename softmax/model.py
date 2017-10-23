@@ -45,7 +45,7 @@ class Model(StdQModel):
         return action, loss
 
     def get_action_selection_parameter(cur_episode, total_episodes):
-        return 0.01
+        return 0.1
 
 
 if __name__ == "__main__":

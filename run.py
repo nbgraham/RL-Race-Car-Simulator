@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from gym import wrappers
 from os import path
 
-from deep_q.model import Model
+from softmax.model import Model
 from std_q.preprocessing import compute_state
 
 global_episode_n = 0
@@ -67,11 +67,13 @@ def run_simulator(continue_from, N, name):
     if continue_from > 0:
         f = open(loss_filename, 'rb')
         totallosses = np.load(f)
+        totallosses.resize(0, N)
 
     totalrewards = np.empty(N)
     if continue_from > 0:
         f = open(reward_filename, 'rb')
         totalrewards = np.load(f)
+        totalrewards.resize(0, N)
 
     plt.ion()
     plt.show()
