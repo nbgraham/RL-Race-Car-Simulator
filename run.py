@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from gym import wrappers
 from os import path
 
-from std_q.model import Model
+from deep_q.model import Model
 from std_q.preprocessing import compute_state
 
 global_episode_n = 0
