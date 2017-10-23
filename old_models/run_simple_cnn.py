@@ -30,6 +30,10 @@ model['W2'] = 2 * np.random.random((n_hidden, n_outputs)) - 1
 def main():
     env = gym.make('CarRacing-v0')
 
+    print("model w1\n",model['W1'])
+    print("model w2\n",model['W2'])
+
+
     rewards=[]
     for i_episode in range(n_episodes):
         observation = env.reset()

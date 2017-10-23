@@ -80,6 +80,11 @@ def main():
 
                 l2, l1 = forward(obs)
 
+                print("w1\n",model['W1'])
+                print("w2\n",model['W2'])
+                print("l2\n",l2)
+                print("l1\n",l1)
+
                 # use prev action selection to calculate error
                 reward_per_time_step = interval_reward/action_time_steps
                 err = error(reward_per_time_step, action_selector, l2)

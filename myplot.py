@@ -18,6 +18,7 @@ def plotRewards(agent, rewards, radius):
     plt.legend()
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
+    # return ax
     plt.show()
 
 def plotLoss(agent, rewards, radius):
@@ -48,9 +49,44 @@ def calculateAveragedRewardsPrevious(rewards, radius):
     averagedRewards = [np.mean(rewards[max(i-radius,0):i]) for i in range(len(rewards))]
     return averagedRewards
 
+def plotLoss(agent, losses, radius):
+    averagedLosses = calculateAveragedLoss(losses, radius)
+
+    ax = plt.figure().gca()
+
+    plt.plot(range(len(losses)), losses, label="Loss")
+    plt.plot(range(len(averagedLosses)), averagedLosses,label="Averaged Loss (r={})".format(radius))
+
+    plt.xlabel('Episode')
+    plt.ylabel('Loss')
+    plt.title('Loss per Episode for {} agent'.format(agent))
+    plt.legend()
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+    return ax
+    # plt.show()
+
+def calculateAveragedLoss(loss, radius):
+    averagedLosses = []
+    for i in range(len(loss)):
+        left = i - radius
+        if left < 0: left = 0
+        right = i + radius
+        if right > len(loss): right = len(loss)
+        selection = loss[left:right+1]
+        average = sum(selection)/len(selection)
+        averagedLosses.append(average)
+    return averagedLosses
 
 def show_rgb(array):
     plt.imshow(array, interpolation='nearest')
+    plt.show()
+
+def plotRewardsAndLoss(agent,rewards,loss,radius):
+    pr = plotRewards(agent,rewards,radius)
+    pl = plotLoss(agent,loss,radius)
+    pr.add_subplot(111)
+    pl.add_subplot(111)
     plt.show()
 
 # randomAgentRewards = [-37.7,-31.6,-34.9,-22.4,-35.6,-31.9,-45.1,-23.1,-35.1,-23.4,-29.9,-30.6,-33.1,-30.1,-37.5,-38.1,-33.8,-33.9,-28.8,-35.8,-31.7]
