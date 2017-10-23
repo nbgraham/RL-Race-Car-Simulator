@@ -36,9 +36,7 @@ def sigmoid(x):
 
 
 def softmax_select(qval, temp):
-    squash = [sigmoid(x) for x in qval]
-
-    prob = [math.exp(q/temp) for q in squash]
+    prob = [math.exp(q/temp) for q in qval]
     prob = prob / np.sum(prob)
 
     softmax_selection_index = np.random.choice(range(len(qval)), p=prob)
