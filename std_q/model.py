@@ -59,7 +59,7 @@ class Model:
             G = reward + gamma*np.max(qvals)
             y = self.prev_qvals[:]
             change = G - y[self.prev_argmax]
-            y[self.prev_argmax] += alpha*change
+            y[self.prev_argmax] = (1-alpha)*y[self.prev_argmax] + alpha*change
             self.update(self.prev_state, y)
 
         self.prev_state = state
