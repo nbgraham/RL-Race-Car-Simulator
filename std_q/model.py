@@ -8,6 +8,8 @@ import random
 import math
 
 from std_q.hyperparameters import gamma, action_selection_coeff, alpha
+from action_selection import softmax_select, eps_select
+
 
 vector_size = 10*10 + 7 + 4
 
@@ -29,23 +31,6 @@ def create_nn(name):
     model.summary()
 
     return model
-
-
-def sigmoid(x):
-    return 1/(1+math.exp(-x))
-
-
-def softmax_select(qval, temp):
-    prob = [math.exp(q/temp) for q in qval]
-    prob = prob / np.sum(prob)
-
-    softmax_selection_index = np.random.choice(range(len(qval)), p=prob)
-    return softmax_selection_index
-
-
-def eps_select(qval, eps):
-    eps_selection_index = random.randint(0,10) if np.random.random() < eps else np.argmax(qval)
-    return eps_selection_index
 
 
 class Model:
