@@ -1,6 +1,5 @@
 import sys, math
 import numpy as np
-import preprocessing as pre
 
 import Box2D
 from Box2D.b2 import (edgeShape, circleShape, fixtureDef, polygonShape, revoluteJointDef, contactListener)
@@ -13,7 +12,7 @@ from gym.utils import colorize, seeding
 import pyglet
 from pyglet import gl
 
-from preprocessing import cropped_grayscale_car_road
+from old_models.preprocessing import cropped_grayscale_car_road
 import cv2
 
 # Easiest continuous control task to learn from pixels, a top-down racing environment.
