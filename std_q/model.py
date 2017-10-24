@@ -70,7 +70,7 @@ class Model:
         return action, loss
 
     def get_action_selection_parameter(cur_episode, total_episodes):
-        return action_selection_coeff/np.sqrt(cur_episode+1 + 900)
+        return 5/np.sqrt(cur_episode+25)-0.5
 
     def sample_action(self, state, action_selection_parameter, softmax=False):
         qval = self.predict(state)
