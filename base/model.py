@@ -18,31 +18,31 @@ class BaseModel:
         self.gamma = gamma
 
         self.prev_state = None
-        self.prev_qvals = None
-        self.prev_argmax = None
+        self.prev_net_output = None
+        self.prev_action_index = None
 
     def predict(self, state):
         return self.model.predict(state.reshape(-1, self.input_size), verbose=0)[0]
 
     def update(self, state, expected_output):
-        self.model.fit(state.reshape(-1, self.input_size), np.array(expected_output).reshape(-1, 11), epochs=1, verbose=0)
+        self.model.fit(state.reshape(-1, self.input_size), np.array(expected_output).reshape(-1, len(self.action_set)), epochs=1, verbose=0)
 
     def get_action(self, state, eps, reward):
-        max_index, network_output = self.sample_action(state, eps)
+        action_index, network_output = self.sample_action(state, eps)
 
-        action = self.action_set[max_index]
+        action = self.action_set[action_index]
         change = 0
 
-        if self.prev_state is not None and self.prev_qvals is not None and self.prev_argmax is not None:
+        if self.prev_state is not None and self.prev_net_output is not None and self.prev_action_index is not None:
             G = reward + self.gamma * np.max(network_output)
-            y = self.prev_qvals[:]
-            change = G - y[self.prev_argmax]
-            y[self.prev_argmax] += self.alpha * change
+            y = self.prev_net_output[:]
+            change = G - y[self.prev_action_index]
+            y[self.prev_action_index] += self.alpha * change
             self.update(self.prev_state, y)
 
         self.prev_state = state
-        self.prev_qvals = network_output
-        self.prev_argmax = max_index
+        self.prev_net_output = network_output
+        self.prev_action_index = action_index
 
         loss = change ** 2
         return action, loss
