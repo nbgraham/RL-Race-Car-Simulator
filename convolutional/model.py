@@ -4,41 +4,54 @@ from keras.layers import Dense, Activation, Dropout, Flatten, Conv2D, MaxPooling
 from keras.optimizers import Adamax#,SGD, RMSprop, Adam
 from keras.utils import np_utils
 import numpy as np
-import random
-import math
 
-from std_q.model import Model as StdQModel
-
-vector_size = 10*10 + 7 + 4
-num_actions = 11
-
-def create_nn(name):
-    model_filename = "race_car_" + name + "h5"
-    if os.path.exists(model_filename):
-        print("Loading existing model")
-        return load_model(model_filename)
-
-    model = Sequential()
-    model.add(Conv2D(32, kernel_size=(2, 2), strides=(1, 1),
-                     activation='relu',
-                     input_shape=(vector_size,)))
-    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-
-    model.add(Conv2D(64, kernel_size=(1, 1), stride=(1,1),
-                     activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    model.add(Flatten())
-    model.add(Dense(512, activation='relu'))
-    model.add(Dense(num_actions, activation='softmax'))
-
-    return model
+from base.model import BaseModel
+from convolutional.hyperparameters import alpha, gamma
 
 
-class Model(StdQModel):
-    def __init__(self, env, name):
-        self.env = env
-        self.model = create_nn(name)  # one feedforward nn for all actions.
-        self.prev_state = None
-        self.prev_qvals = None
-        self.prev_argmax = None
+class Model(BaseModel):
+    def create_nn(self, name, input_shape):
+        model_filename = "race_car_" + name + "h5"
+        if os.path.exists(model_filename):
+            print("Loading existing model")
+            return load_model(model_filename)
+
+        model = Sequential()
+        model.add(Conv2D(32, kernel_size=(2, 2), strides=(1, 1),
+                         activation='relu',
+                         input_shape=input_shape))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+        model.add(Conv2D(64, kernel_size=(1, 1), stride=(1, 1),
+                         activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+
+        model.add(Flatten())
+        model.add(Dense(512, activation='relu'))
+        model.add(Dense(len(self.action_set), activation='softmax'))
+
+        adamax = Adamax()  # Adamax(lr=0.001)
+        model.compile(loss='mse', optimizer=adamax)
+        model.summary()
+
+        return model
+
+    def get_action(self, state, eps, reward):
+        max_index, network_output = self.sample_action(state, eps)
+
+        action = self.action_set[max_index]
+        change = 0
+
+        if self.prev_state is not None and self.prev_qvals is not None and self.prev_argmax is not None:
+            G = reward + gamma * np.max(network_output)
+            y = self.prev_qvals[:]
+            change = G - y[self.prev_argmax]
+            y[self.prev_argmax] = (1 - alpha) * y[self.prev_argmax] + alpha * change
+            self.update(self.prev_state, y)
+
+        self.prev_state = state
+        self.prev_qvals = network_output
+        self.prev_argmax = max_index
+
+        loss = change ** 2
+        return action, loss

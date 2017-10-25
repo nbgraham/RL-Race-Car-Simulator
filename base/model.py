@@ -12,7 +12,7 @@ class BaseModel:
         self.input_size = input_size
         self.action_set = action_set
         self.env = env
-        self.model = BaseModel.create_nn(name, input_size)  # one feedforward nn for all actions.
+        self.model = self.create_nn(name, input_size)  # one feedforward nn for all actions.
         self.prev_state = None
         self.prev_qvals = None
         self.prev_argmax = None
@@ -54,7 +54,7 @@ class BaseModel:
         else:
             return eps_select(network_output, action_selection_parameter), network_output
 
-    def create_nn(name, input_size):
+    def create_nn(self, name, input_size):
         model_filename = "race_car_" + name + "h5"
         if path.exists(model_filename):
             print("Loading existing model")
@@ -64,7 +64,7 @@ class BaseModel:
         model.add(Dense(512, init='lecun_uniform', input_shape=(input_size,)))  # 7x7 + 3.  or 14x14 + 3
         model.add(Activation('relu'))
 
-        model.add(Dense(11, init='lecun_uniform'))
+        model.add(Dense(len(self.action_set), init='lecun_uniform'))
         model.add(Activation('linear'))  # linear output so we can have range of real-valued outputs
 
         adamax = Adamax()  # Adamax(lr=0.001)
