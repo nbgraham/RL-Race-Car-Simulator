@@ -14,7 +14,7 @@ global_episode_n = 0
 
 def main():
     name, N = get_params()
-    episode_filename = "episode_file_" + name + ".txt"
+    episode_filename = "saved_episodes/episode_file_" + name + ".txt"
 
     try:
         continue_from = get_last_episode(episode_filename)
