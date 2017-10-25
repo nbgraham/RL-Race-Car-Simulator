@@ -54,10 +54,10 @@ def save_last_episode(episode_filename, episode_n):
 
 
 def run_simulator(continue_from, N, name):
-    model_filename = "race_car_" + name + ".h5"
-    reward_filename = "rewards_" + name + ".npy"
-    loss_filename = "loss_" + name + ".npy"
-    monitor_foldername = "monitor_folder_" + name
+    model_filename = "models/race_car_" + name + ".h5"
+    reward_filename = "rewards/rewards_" + name + ".npy"
+    loss_filename = "losses/loss_" + name + ".npy"
+    monitor_foldername = "monitors/monitor_folder_" + name
 
     env = gym.make('CarRacing-v0')
     env = wrappers.Monitor(env, monitor_foldername, force=True)
