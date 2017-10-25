@@ -4,7 +4,7 @@ from time import sleep
 from pyglet.window import key
 from matplotlib import pyplot as plt
 
-from old_models.preprocessing import myprep, car_field
+from convolutional.preprocessing import compute_state
 from human_env import CarRacing
 
 ACTION = np.array([0.0, 0.0, 0.0])
@@ -27,7 +27,7 @@ def key_release(k, mod):
 
 
 def main():
-    env = CarRacing()
+    env = CarRacing(turn_sharpness=0.1)
     env.render()
     record_video = False
     if record_video:
@@ -54,21 +54,19 @@ def play_one(env, matrices, record_video):
     restart = False
 
     while True:
-        # if steps == 1:
-        #     sleep(5)
-        #     break
+        if steps == 1:
+            sleep(2)
+            break
 
         s, r, done, info = env.step(ACTION)
 
-        road_matrix = myprep(s)
-        car_matrix = car_field(s)
+        road_matrix = compute_state(s)
 
         # if steps==50:
         #     plt.imshow(road_matrix)
         #     plt.show()
 
-        cv2.imshow('road', road_matrix)
-        cv2.imshow('car', car_matrix)
+        cv2.imshow('state', road_matrix)
         cv2.waitKey(1)
 
         total_reward += r

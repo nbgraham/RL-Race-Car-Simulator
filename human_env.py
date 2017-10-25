@@ -105,7 +105,7 @@ class CarRacing(gym.Env):
         'video.frames_per_second' : FPS
     }
 
-    def __init__(self):
+    def __init__(self, turn_sharpness=1):
         self._seed()
         self.contactListener_keepref = FrictionDetector(self)
         self.world = Box2D.b2World((0,0), contactListener=self.contactListener_keepref)
@@ -116,6 +116,7 @@ class CarRacing(gym.Env):
         self.car = None
         self.reward = 0.0
         self.prev_reward = 0.0
+        self.turn_sharpness = turn_sharpness
 
         self.action_space = spaces.Box( np.array([-1,0,0]), np.array([+1,+1,+1]))  # steer, gas, brake
         self.observation_space = spaces.Box(low=0, high=255, shape=(STATE_H, STATE_W, 3))
@@ -137,10 +138,12 @@ class CarRacing(gym.Env):
         # Create checkpoints
         checkpoints = []
         for c in range(CHECKPOINTS):
-            alpha = 2*math.pi*c/CHECKPOINTS + self.np_random.uniform(0, 0.3*2*math.pi*1/CHECKPOINTS)
+            alpha = 2*math.pi*c/CHECKPOINTS + self.np_random.uniform(0, self.turn_sharpness*2*math.pi*1/CHECKPOINTS)
+
             scale = 2*abs(c-CHECKPOINTS/2)/CHECKPOINTS
             cur_rad = scale*1.5*TRACK_RAD
-            rad = self.np_random.uniform(cur_rad/1.15, cur_rad)
+            rad = self.np_random.uniform(cur_rad/(2*self.turn_sharpness + 1), cur_rad)
+
             if c==0:
                 alpha = 0
                 rad = 1.5*TRACK_RAD
