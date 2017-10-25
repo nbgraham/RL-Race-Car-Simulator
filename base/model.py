@@ -59,7 +59,7 @@ class BaseModel:
             return eps_select(network_output, action_selection_parameter), network_output
 
     def create_nn(self, name, input_size):
-        model_filename = "race_car_" + name + "h5"
+        model_filename = "models/race_car_" + name + ".h5"
         if path.exists(model_filename):
             print("Loading existing model")
             return load_model(model_filename)
