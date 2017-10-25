@@ -136,21 +136,23 @@ class CarRacing(gym.Env):
         CHECKPOINTS = 12
 
         # Create checkpoints
+        max_radius_scale = (self.turn_sharpness/2 + 1)
         checkpoints = []
         for c in range(CHECKPOINTS):
             alpha = 2*math.pi*c/CHECKPOINTS + self.np_random.uniform(0, self.turn_sharpness*2*math.pi*1/CHECKPOINTS)
 
+
             scale = 2*abs(c-CHECKPOINTS/2)/CHECKPOINTS
-            cur_rad = scale*1.5*TRACK_RAD
+            cur_rad = scale*max_radius_scale*TRACK_RAD
             rad = self.np_random.uniform(cur_rad/(2*self.turn_sharpness + 1), cur_rad)
 
             if c==0:
                 alpha = 0
-                rad = 1.5*TRACK_RAD
+                rad = max_radius_scale*TRACK_RAD
             if c==CHECKPOINTS-1:
                 alpha = 2*math.pi*c/CHECKPOINTS
                 self.start_alpha = 2*math.pi*(-0.5)/CHECKPOINTS
-                rad = 1.5*TRACK_RAD
+                rad = max_radius_scale*TRACK_RAD
             checkpoints.append( (alpha, rad*math.cos(alpha), rad*math.sin(alpha)) )
 
         #print "\n".join(str(h) for h in checkpoints)
