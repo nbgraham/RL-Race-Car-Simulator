@@ -2,8 +2,9 @@ import cv2
 import numpy as np
 from time import sleep
 from pyglet.window import key
+from matplotlib import pyplot as plt
 
-from old_models.preprocessing import cropped_grayscale_car_road
+from old_models.preprocessing import myprep, car_field
 from human_env import CarRacing
 
 ACTION = np.array([0.0, 0.0, 0.0])
@@ -59,10 +60,15 @@ def play_one(env, matrices, record_video):
 
         s, r, done, info = env.step(ACTION)
 
-        matrix = cropped_grayscale_car_road(s)
-        matrices.append(matrix)
+        road_matrix = myprep(s)
+        car_matrix = car_field(s)
 
-        cv2.imshow('road', matrix)
+        # if steps==50:
+        #     plt.imshow(road_matrix)
+        #     plt.show()
+
+        cv2.imshow('road', road_matrix)
+        cv2.imshow('car', car_matrix)
         cv2.waitKey(1)
 
         total_reward += r

@@ -8,11 +8,11 @@ def main():
     if len(sys.argv) > 1:
         name = sys.argv[1]
 
-    reward_file = open('rewards_' + name + '.npy', 'rb')
-    rewards = np.load(reward_file)
+    with open('rewards/rewards_' + name + '.npy', 'rb') as reward_file:
+        rewards = np.load(reward_file)
 
-    loss_file = open('loss_' + name + '.npy', 'rb')
-    losses = np.load(loss_file)
+    with open('losses/loss_' + name + '.npy', 'rb') as loss_file:
+        losses = np.load(loss_file)
 
     radius = int(len(rewards)/10)
     if len(sys.argv) > 2:

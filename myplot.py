@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import numpy as np
 
-def plotRewards(agent, rewards, radius):
+def plotRewards(agent, rewards, radius, plotnow=True):
     averagedRewards = calculateAveragedRewards(rewards, radius)
     averagePrevRewards = calculateAveragedRewardsPrevious(rewards, radius)
 
@@ -18,10 +18,12 @@ def plotRewards(agent, rewards, radius):
     plt.legend()
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
-    # return ax
-    plt.show()
+    if plotnow:
+        plt.show()
+    return ax
 
-def plotLoss(agent, rewards, radius):
+
+def plotLoss(agent, rewards, radius, plotnow=True):
     averagedRewards = calculateAveragedRewards(rewards, radius)
     averagePrevRewards = calculateAveragedRewardsPrevious(rewards, radius)
 
@@ -37,34 +39,20 @@ def plotLoss(agent, rewards, radius):
     plt.legend()
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
-    plt.show()
-
+    if plotnow:
+        plt.show()
+    return ax
 
 
 def calculateAveragedRewards(rewards, radius):
     averagedRewards = [np.mean(rewards[max(i-radius,0):min(i+radius,len(rewards))]) for i in range(len(rewards))]
     return averagedRewards
 
+
 def calculateAveragedRewardsPrevious(rewards, radius):
     averagedRewards = [np.mean(rewards[max(i-radius,0):i]) for i in range(len(rewards))]
     return averagedRewards
 
-def plotLoss(agent, losses, radius):
-    averagedLosses = calculateAveragedLoss(losses, radius)
-
-    ax = plt.figure().gca()
-
-    plt.plot(range(len(losses)), losses, label="Loss")
-    plt.plot(range(len(averagedLosses)), averagedLosses,label="Averaged Loss (r={})".format(radius))
-
-    plt.xlabel('Episode')
-    plt.ylabel('Loss')
-    plt.title('Loss per Episode for {} agent'.format(agent))
-    plt.legend()
-    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-
-    return ax
-    # plt.show()
 
 def calculateAveragedLoss(loss, radius):
     averagedLosses = []
@@ -83,8 +71,8 @@ def show_rgb(array):
     plt.show()
 
 def plotRewardsAndLoss(agent,rewards,loss,radius):
-    pr = plotRewards(agent,rewards,radius)
-    pl = plotLoss(agent,loss,radius)
+    pr = plotRewards(agent,rewards,radius, plotnow=False)
+    pl = plotLoss(agent,loss,radius, plotnow=False)
     pr.add_subplot(111)
     pl.add_subplot(111)
     plt.show()
