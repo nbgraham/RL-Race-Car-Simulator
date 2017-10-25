@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+vector_size = 10*10 + 7 + 4
 
 def compute_state(observation):
     bottom_black_bar_bw, upper_field_bw, car_field_t = transform(observation)

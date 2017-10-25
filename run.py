@@ -6,7 +6,8 @@ from gym import wrappers
 from os import path
 
 from std_q.model import Model
-from std_q.preprocessing import compute_state
+from std_q.preprocessing import compute_state, vector_size as input_size
+from default_action_set import default_action_set
 
 global_episode_n = 0
 
@@ -61,7 +62,7 @@ def run_simulator(continue_from, N, name):
     env = gym.make('CarRacing-v0')
     env = wrappers.Monitor(env, monitor_foldername, force=True)
 
-    model = Model(env, name)
+    model = Model(env, name, input_size, default_action_set)
 
     totallosses = np.empty(N)
     if continue_from > 0:
@@ -76,6 +77,7 @@ def run_simulator(continue_from, N, name):
         totalrewards.resize(N)
 
     plt.ion()
+    plt.title(name)
     plt.show()
 
     for n in range(continue_from,N):
@@ -86,7 +88,7 @@ def run_simulator(continue_from, N, name):
         totalrewards[n] = totalreward
         totallosses[n] = totalloss
 
-        print("episode:", n, "eps:", eps, "iters", iters, "total loss:", totalloss, "avg loss (last 100):", totallosses[max(0, n-100):(n+1)].mean(), "total reward:", totalreward, "avg reward (last 100):", totalrewards[max(0, n-100):(n+1)].mean())
+        print("episode:", n, "eps:", round(eps,3), "iters", iters, "total loss:", round(totalloss), "avg loss (last 100):", round(totallosses[max(0, n-100):(n+1)].mean()), "total reward:", round(totalreward), "avg reward (last 100):", round(totalrewards[max(0, n-100):(n+1)].mean()))
 
         if n % 10 == 0:
             model.model.save(model_filename)
