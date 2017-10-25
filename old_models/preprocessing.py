@@ -39,7 +39,7 @@ def car_field(observation):
     car_field_t = [car_field_bw[:, 3].mean() / 255, car_field_bw[:, 4].mean() / 255, car_field_bw[:, 5].mean() / 255,
                    car_field_bw[:, 6].mean() / 255]
 
-    return car_field_t
+    return car_field_bw
 
 def compute_state(observation):
     above_bar_bw = above_bar(observation)
