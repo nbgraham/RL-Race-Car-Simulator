@@ -54,7 +54,7 @@ class Model(BaseModel):
         self.prev_net_output = probs
         self.prev_action_index = arg_max_probs
 
-        loss = change**2
+        loss = np.sum(change**2)
         return action, loss
 
     def create_nn(self, name, input_size):
