@@ -5,9 +5,13 @@ from keras.optimizers import Adamax#,SGD, RMSprop, Adam
 
 
 from base.model import BaseModel
+from deep_q.hyperparameters import alpha, gamma
 
 
 class Model(BaseModel):
+    def __init__(self, env, name, input_size, action_set):
+        BaseModel.__init__(self, env, name, input_size, action_set, alpha, gamma)
+
     def create_nn(self, name, input_size):
         model_filename = "models/race_car_" + name + "h5"
         if os.path.exists(model_filename):

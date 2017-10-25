@@ -8,11 +8,15 @@ from action_selection import softmax_select, eps_select
 from base.hyperparameters import alpha, gamma
 
 class BaseModel:
-    def __init__(self, env, name, input_size, action_set):
+    def __init__(self, env, name, input_size, action_set, alpha=alpha, gamma=gamma):
         self.input_size = input_size
         self.action_set = action_set
         self.env = env
         self.model = self.create_nn(name, input_size)  # one feedforward nn for all actions.
+
+        self.alpha = alpha
+        self.gamma = gamma
+
         self.prev_state = None
         self.prev_qvals = None
         self.prev_argmax = None
@@ -30,10 +34,10 @@ class BaseModel:
         change = 0
 
         if self.prev_state is not None and self.prev_qvals is not None and self.prev_argmax is not None:
-            G = reward + gamma * np.max(network_output)
+            G = reward + self.gamma * np.max(network_output)
             y = self.prev_qvals[:]
             change = G - y[self.prev_argmax]
-            y[self.prev_argmax] += alpha * change
+            y[self.prev_argmax] += self.alpha * change
             self.update(self.prev_state, y)
 
         self.prev_state = state
