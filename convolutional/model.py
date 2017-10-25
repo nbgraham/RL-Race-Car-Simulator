@@ -16,13 +16,14 @@ class Model(BaseModel):
             print("Loading existing model")
             return load_model(model_filename)
 
+        print("Input shape", input_shape)
         model = Sequential()
-        model.add(Conv2D(32, kernel_size=(2, 2), strides=(1, 1),
+        model.add(Conv2D(32, kernel_size=(4, 4), strides=(2, 2),
                          activation='relu',
                          input_shape=input_shape))
         model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
-        model.add(Conv2D(64, kernel_size=(1, 1), stride=(1, 1),
+        model.add(Conv2D(16, kernel_size=(4, 4), strides=(2, 2),
                          activation='relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
 
@@ -55,3 +56,9 @@ class Model(BaseModel):
 
         loss = change ** 2
         return action, loss
+
+    def predict(self, state):
+        return self.model.predict(state.reshape((-1, 90,90,1)), verbose=0)[0]
+
+    def update(self, state, expected_output):
+        self.model.fit(state.reshape(-1, 90, 90, 1), np.array(expected_output).reshape(-1, 11), epochs=1, verbose=0)
