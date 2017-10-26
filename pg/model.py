@@ -28,7 +28,8 @@ class Model(BaseModel):
             return eps_select(probs, action_selection_parameter), probs
 
     def get_action(self, state, eps, reward):
-        self.last_ten_rewards = self.last_ten_rewards[1:].append(reward)
+        self.last_ten_rewards = self.last_ten_rewards[1:]
+        self.last_ten_rewards.append(reward)
 
         arg_max_probs, probs = self.sample_action(state, eps)
 
