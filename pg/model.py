@@ -62,8 +62,9 @@ class Model(BaseModel):
         loss = np.sum(change**2)
         return action, loss
 
+    # softmax output layer activation for prob
     def create_nn(self, name, input_size):
-        model_filename = "race_car_" + name + "h5"
+        model_filename = "models/race_car_" + name + ".h5"
         if path.exists(model_filename):
             print("Loading existing model")
             return load_model(model_filename)
