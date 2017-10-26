@@ -40,11 +40,11 @@ class Model(BaseModel):
             other_prob = 0
             choice_prob = 0
             if np.sum(self.last_ten_rewards) < 0:
-                print("Discourage")
+                # print("Discourage")
                 uniform_prob = 1/(len(self.action_set) - 1)
                 other_prob = uniform_prob
             else:
-                print("Encourage")
+                # print("Encourage")
                 choice_prob = 1
             G_array = [other_prob]*len(self.action_set)
             G_array[self.prev_action_index] = choice_prob
