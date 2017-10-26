@@ -54,17 +54,17 @@ def play_one(env, matrices, record_video):
     restart = False
 
     while True:
-        if steps == 1:
-            sleep(2)
-            break
+        # if steps == 1:
+        #     sleep(2)
+        #     break
 
         s, r, done, info = env.step(ACTION)
 
         road_matrix = compute_state(s)
 
-        # if steps==50:
-        #     plt.imshow(road_matrix)
-        #     plt.show()
+        if steps==50:
+            plt.imshow(road_matrix)
+            plt.show()
 
         cv2.imshow('state', road_matrix)
         cv2.waitKey(1)
