@@ -15,7 +15,7 @@ from action_selection import softmax_select, eps_select
 class Model(BaseModel):
     def __init__(self, env, name, input_size, action_set):
         BaseModel.__init__(self, env, name, input_size, action_set, alpha=alpha, gamma=gamma)
-
+        self.last_ten_rewards = [0]*10
 
     def sample_action(self, state, action_selection_parameter, softmax=False):
         probs = self.predict(state)
@@ -28,6 +28,8 @@ class Model(BaseModel):
             return eps_select(probs, action_selection_parameter), probs
 
     def get_action(self, state, eps, reward):
+        self.last_ten_rewards = self.last_ten_rewards[1:].append(reward)
+
         arg_max_probs, probs = self.sample_action(state, eps)
 
         action = self.action_set[arg_max_probs]
@@ -36,10 +38,12 @@ class Model(BaseModel):
         if self.prev_state is not None and self.prev_net_output is not None and self.prev_action_index is not None:
             other_prob = 0
             choice_prob = 0
-            if reward < 0:
+            if np.sum(self.last_ten_rewards) < 0:
+                print("Discourage")
                 uniform_prob = 1/(len(self.action_set) - 1)
                 other_prob = uniform_prob
             else:
+                print("Encourage")
                 choice_prob = 1
             G_array = [other_prob]*len(self.action_set)
             G_array[self.prev_action_index] = choice_prob
