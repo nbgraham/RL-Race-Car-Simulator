@@ -64,4 +64,4 @@ class Model(BaseModel):
         self.model.fit(state.reshape(-1, 90, 90, 1), np.array(expected_output).reshape(-1, 11), epochs=1, verbose=0)
 
     def get_action_selection_parameter(cur_episode, total_episodes):
-        return max(.01, min(.99, total_episodes**.3 / np.sqrt(cur_episode + 25) - 0.1))
+        return max(.01, min(.99, (total_episodes**.3 / np.sqrt(cur_episode + 25) - 0.1)/5))
