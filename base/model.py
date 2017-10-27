@@ -21,6 +21,8 @@ class BaseModel:
         self.prev_net_output = None
         self.prev_action_index = None
 
+        self.model_filename = "models/race_car_" + name + ".h5"
+
     def predict(self, state):
         return self.model.predict(state.reshape(-1, self.input_size), verbose=0)[0]
 
@@ -58,11 +60,13 @@ class BaseModel:
         else:
             return eps_select(network_output, action_selection_parameter), network_output
 
+    def save(self):
+        self.model.save(self.model_filename)
+
     def create_nn(self, name, input_size):
-        model_filename = "models/race_car_" + name + ".h5"
-        if path.exists(model_filename):
+        if path.exists(self.model_filename):
             print("Loading existing model")
-            return load_model(model_filename)
+            return load_model(self.model_filename)
 
         model = Sequential()
         model.add(Dense(512, init='lecun_uniform', input_shape=(input_size,)))  # 7x7 + 3.  or 14x14 + 3
