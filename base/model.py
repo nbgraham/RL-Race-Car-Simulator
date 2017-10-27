@@ -9,6 +9,8 @@ from base.hyperparameters import alpha, gamma
 
 class BaseModel:
     def __init__(self, env, name, input_size, action_set, alpha=alpha, gamma=gamma):
+        self.model_filename = "models/race_car_" + name + ".h5"
+
         self.input_size = input_size
         self.action_set = action_set
         self.env = env
@@ -20,8 +22,6 @@ class BaseModel:
         self.prev_state = None
         self.prev_net_output = None
         self.prev_action_index = None
-
-        self.model_filename = "models/race_car_" + name + ".h5"
 
     def predict(self, state):
         return self.model.predict(state.reshape(-1, self.input_size), verbose=0)[0]
