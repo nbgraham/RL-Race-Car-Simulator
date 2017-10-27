@@ -11,7 +11,7 @@ from convolutional.hyperparameters import alpha, gamma
 
 class Model(BaseModel):
     def create_nn(self, name, input_shape):
-        model_filename = "models/race_car_" + name + "h5"
+        model_filename = "models/race_car_" + name + ".h5"
         if os.path.exists(model_filename):
             print("Loading existing model")
             return load_model(model_filename)
