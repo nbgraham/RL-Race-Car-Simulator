@@ -4,7 +4,13 @@ from time import sleep
 from pyglet.window import key
 from matplotlib import pyplot as plt
 
-from convolutional.preprocessing import compute_state
+from sarsa.model import Model
+from base.preprocessing import compute_state, vector_size as input_size
+from default_action_set import default_action_set
+
+from myplot import plotRewards
+
+
 from human_env import CarRacing
 
 ACTION = np.array([0.0, 0.0, 0.0])
@@ -27,28 +33,28 @@ def key_release(k, mod):
 
 
 def main():
-    env = CarRacing(turn_sharpness=0.1)
+    env = CarRacing(turn_sharpness=0.05)
     env.render()
     record_video = False
     if record_video:
         env.monitor.start('/tmp/video-test', force=True)
-    env.viewer.window.on_key_press = key_press
-    env.viewer.window.on_key_release = key_release
+    # env.viewer.window.on_key_press = key_press
+    # env.viewer.window.on_key_release = key_release
 
-    matrices = []
+    model = Model(env, 'sarsa', input_size, default_action_set)
+
+    rewards = []
 
     for i in range(10):
-        play_one(env, matrices, record_video)
+        reward = play_one(env, model, record_video)
+        rewards.append(reward)
 
-    f = open('roads.npy', 'wb')
-    np.save(f, np.vstack(matrices))
-    f.close()
-
+    plotRewards("Trained SARSA easy", rewards, radius=2)
     env.close()
 
 
-def play_one(env, matrices, record_video):
-    env.reset()
+def play_one(env, model, record_video):
+    obs = env.reset()
     total_reward = 0.0
     steps = 0
     restart = False
@@ -58,17 +64,20 @@ def play_one(env, matrices, record_video):
         #     sleep(2)
         #     break
 
-        s, r, done, info = env.step(ACTION)
+        state = compute_state(obs)
+        action = model.get_trained_action(state)
 
-        road_matrix = compute_state(s)
+        obs, r, done, info = env.step(action)
 
-        if steps==50:
-            plt.imshow(road_matrix)
-            plt.show()
 
-        cv2.imshow('state', road_matrix)
-        cv2.waitKey(1)
+        #
+        # if steps==500:
+        #     plt.imshow(road_matrix)
+        #     plt.show()
 
+        if steps > 1500:
+            print("This episode is stuck")
+            break
         total_reward += r
         if steps % 200 == 0 or done:
             print("\naction " + str(["{:+0.2f}".format(x) for x in ACTION]))
