@@ -9,4 +9,4 @@ class Model(BaseModel):
         BaseModel.__init__(self, env, name, input_size, action_set, alpha=alpha, gamma=gamma)
 
     def get_action_selection_parameter(cur_episode, total_episodes):
-        return 5/np.sqrt(cur_episode+25)-0.1
+        return 0.5/np.sqrt(cur_episode+901)

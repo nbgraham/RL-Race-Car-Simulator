@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 from gym import wrappers
 from os import path
 
-from convolutional.model import Model
-from convolutional.preprocessing import compute_state, vector_size as input_size
+from std_q.model import Model
+from std_q.preprocessing import compute_state, vector_size as input_size
 from default_action_set import default_action_set
 
 global_episode_n = 0
