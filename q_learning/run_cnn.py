@@ -11,39 +11,46 @@ fifth experiment:
 cnn q-learning agent
 
 uses target qnet and frame skipping
+
+first time: frame skipping 3, one gas option (.33)
+second time: frame skipping 1, same actions
+third time: frame skipping 4, 3 gas actions (.33,.5,1)
 '''
 
 env = gym.make('CarRacing-v0')
 env = wrappers.Monitor(env, 'monitor-folder', force=True)
 
-action_time_steps = 3
+action_time_steps = 4
 frame_skip = wrappers.SkipWrapper(action_time_steps)
 env = frame_skip(env)
 
-num_episodes = 1000
+num_episodes = 2500
 max_time_steps = 1500
 # batch_size = 10
-update_time_steps = 100
+update_time_steps = 1000
 
 #learning parameters
-learning_rate = 0.01
+learning_rate = 0.001
 gamma = 0.99
-epsilon = 0.8 #lowering as episodes increase
+epsilon = 1 #lowering as episodes increase
 min_epsilon = 0.05
 
 action_set = np.array([
 #steering (left,right)
 [-1.0,0,0],
+[-0.75,0,0],
 [-0.5,0,0],
+[-0.25,0,0],
 [0,0,0],
+[0.25,0,0],
 [0.5,0,0],
+[0.75,0,0],
 [1.0,0,0],
 #gas
 [0,0.33,0],
 #brake
 [0,0,0.5]
 ])
-
 #network parameters
 num_channels = 4
 image_size = 84

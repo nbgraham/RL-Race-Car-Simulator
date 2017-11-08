@@ -10,34 +10,36 @@ from gym import wrappers
 fourth experiment:
 simple q-learning agent
 
-has a current and target network
+has a current and target network 
+the target is used to generate actions with current being updated based on those actions, copied over every 100 frames
+
+uses exponential epsilon decay
 '''
 
 env = gym.make('CarRacing-v0')
 env = wrappers.Monitor(env, 'monitor-folder', force=True)
-#repeats an action for 3 frames with env.step(action)
-action_time_steps = 3
-frame_skip = wrappers.SkipWrapper(action_time_steps)
-env = frame_skip(env)
 
-num_episodes = 1000
+num_episodes = 1
 max_time_steps = 1500
-batch_size = 10
-update_time_steps = 10
+update_time_steps = 100
 
 #learning parameters
 learning_rate = 0.01
 gamma = 0.99
-epsilon = 0.8 #lowering as episodes increase
-min_epsilon = 0.05
+epsilon = 1 #starting at 1 so random all of the time (lowering as episodes increase)
+min_epsilon = 0.1
 
 
 action_set = np.array([
 #steering (left,right)
 [-1.0,0,0],
+[-0.75,0,0],
 [-0.5,0,0],
+[-0.25,0,0],
 [0,0,0],
+[0.25,0,0],
 [0.5,0,0],
+[0.75,0,0],
 [1.0,0,0],
 #gas
 [0,0.33,0],
@@ -88,9 +90,6 @@ def copyCurrentToTargetNet(current,target):
     properties = zip(targetProperties,currentProperties)
     return [tvar.assign(cvar) for tvar,cvar in properties]
 
-# saver = tf.train.Saver()
-# model_path = "./model/car.ckpt"
-
 def get_env_action(nn_output, eps):
     if np.random.random() < eps:
         action_index = random.randint(0, len(action_set)-1)
@@ -109,13 +108,12 @@ with tf.Session() as sess:
     totalrewards = np.empty(num_episodes)
     totallosses = np.empty(num_episodes)
     for episode in range(num_episodes):
-        #decrease epsilon every episode
-        if (epsilon > min_epsilon):
+        # decrease epsilon every episode
+        if (epsilon >= min_epsilon):
             epsilon -= 0.001
 
         #reset for each episode
         observation = env.reset()
-        # prev_state = None
         done = False
         totalreward = 0
         timesteps = 0
@@ -164,12 +162,8 @@ with tf.Session() as sess:
         totalrewards[episode] = totalreward
         if episode % 1 == 0:
             print("episode:", episode, "timesteps:", timesteps, "total reward:", totalreward, "eps:", epsilon, "avg reward (last 100):",totalrewards[max(0,episode-100):(episode+1)].mean())
-        # if episode % batch_size == 0:
-        #     save_path = saver.save(sess, model_path)  #need to save model weights maybe?
-        #     print("model saved in file: ", save_path,"\n")
-        #     # can load later with saver.restore(sess, model_path)
         print("avg reward for last 100 episodes:",totalrewards[-100:].mean())
         print("total steps:", totalrewards.sum())
 
-    mp.plotRewards("simple qnet", totalrewards, int(num_episodes/10))
+    mp.plotRewards("target network", totalrewards, int(num_episodes/10))
     mp.show()

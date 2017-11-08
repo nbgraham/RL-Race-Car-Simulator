@@ -64,3 +64,25 @@ def above_bar_cnn(observation):
     # above_bar_bw = above_bar_bw.astype('float')/255
     above_bar_bw = img.astype('float')/255
     return np.resize(above_bar_bw,(84,84,1))
+
+def speed_cnn(observation):
+    bottom_black_bar = observation[84:, 12:]
+    img = cv2.cvtColor(bottom_black_bar, cv2.COLOR_RGB2GRAY)
+    bottom_black_bar_bw = cv2.threshold(img, 1, 255, cv2.THRESH_BINARY)[1]
+    bottom_black_bar_bw = cv2.resize(bottom_black_bar_bw, (84, 12), interpolation=cv2.INTER_NEAREST)
+
+    right_steering = bottom_black_bar_bw[6, 36:46].mean() / 255
+    left_steering = bottom_black_bar_bw[6, 26:36].mean() / 255
+    steering = (right_steering - left_steering + 1.0) / 2
+
+    left_gyro = bottom_black_bar_bw[6, 46:60].mean() / 255
+    right_gyro = bottom_black_bar_bw[6, 60:76].mean() / 255
+    gyro = (right_gyro - left_gyro + 1.0) / 2
+
+    speed = bottom_black_bar_bw[:, 0][:-2].mean() / 255
+    abs1 = bottom_black_bar_bw[:, 6][:-2].mean() / 255
+    abs2 = bottom_black_bar_bw[:, 8][:-2].mean() / 255
+    abs3 = bottom_black_bar_bw[:, 10][:-2].mean() / 255
+    abs4 = bottom_black_bar_bw[:, 12][:-2].mean() / 255
+
+    return [steering, speed, gyro, abs1, abs2, abs3, abs4]

@@ -8,19 +8,15 @@ from gym import wrappers
 
 
 ''' 
-third experiment:
+first experiment:
 simple q-learning agent
 
-same as second experiment but repeats actions for 3 frames
+ended up driving in circles
 '''
-
 env = gym.make('CarRacing-v0')
 env = wrappers.Monitor(env, 'monitor-folder', force=True)
-#repeats an action for 3 frames with env.step(action)
-every_three_frames = wrappers.SkipWrapper(3)
-env = every_three_frames(env)
 
-num_episodes = 1000
+num_episodes = 1
 max_time_steps = 1500
 batch_size = 10
 action_time_steps = 1
@@ -36,19 +32,15 @@ min_epsilon = 0.1
 action_set = np.array([
 #steering (left,right)
 [-1.0,0,0],
-[-0.75,0,0],
-[-0.5,0,0],
-[-0.25,0,0],
-[0,0,0],
-[0.25,0,0],
-[0.5,0,0],
-[0.75,0,0],
+[-0.5,0.2,0],
+[0.5,0.2,0],
 [1.0,0,0],
 #gas
 [0,0.3,0],
 [0,0.5,0],
+[0,0.8,0],
 #brake
-[0,0,0.8]
+[0,0,0.5]
 ])
 
 #network parameters
@@ -119,8 +111,11 @@ with tf.Session() as sess:
             state = pre.compute_state(observation)
 
             q_values = sess.run(qvals, feed_dict={x: state.reshape(-1,num_input)})[0]
-
-            action = get_env_action(q_values,epsilon)
+            if timesteps < default_time_steps:
+                #default to gas
+                action = [0,0.8,0]
+            else:
+                action = get_env_action(q_values,epsilon)
 
             observation, reward, done, info = env.step(action)
             prev_state = state
