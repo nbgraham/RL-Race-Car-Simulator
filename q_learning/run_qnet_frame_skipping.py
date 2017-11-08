@@ -27,7 +27,7 @@ action_time_steps = 1
 default_time_steps = 10
 
 #learning parameters
-learning_rate = 0.001
+learning_rate = 0.01
 gamma = 0.99
 epsilon = 1 #starting at 1 so random all of the time (lowering as episodes increase)
 # epsilon = 0.1 #after 900 episodes
