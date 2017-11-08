@@ -12,7 +12,14 @@ from base.model import BaseModel
 class Model(BaseModel):
     def __init__(self, env, name, input_size, action_set):
         BaseModel.__init__(self, env, name, input_size, action_set, alpha=alpha, gamma=gamma)
-    
+
+    def get_trained_action(self, state):
+        argmax_qvals, qvals = self.sample_action(state, 0)
+
+        action = self.action_set[argmax_qvals]
+
+        return action
+
     def get_action(self, state, eps, reward):
         argmax_qvals, qvals = self.sample_action(state, eps)
 
@@ -24,7 +31,7 @@ class Model(BaseModel):
             y = self.prev_net_output[:]
             change = G - y[self.prev_action_index]
             y[self.prev_action_index] += alpha * change
-            # self.update(self.prev_state, y)
+            self.update(self.prev_state, y)
 
         self.prev_state = state
         self.prev_net_output = qvals

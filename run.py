@@ -90,7 +90,7 @@ def run_simulator(continue_from, N, name):
 
         print("episode:", n, "eps:", round(eps,3), "iters", iters, "total loss:", round(totalloss), "avg loss (last 100):", round(totallosses[max(0, n-100):(n+1)].mean()), "total reward:", round(totalreward), "avg reward (last 100):", round(totalrewards[max(0, n-100):(n+1)].mean()))
 
-        if n % 10 == 0:
+        if n % 100 == 0:
             model.model.save(model_filename)
             with open(reward_filename, 'wb') as out_reward_file:
                 np.save(out_reward_file, totalrewards)

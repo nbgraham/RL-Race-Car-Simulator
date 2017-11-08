@@ -9,6 +9,8 @@ from base.hyperparameters import alpha, gamma
 
 class BaseModel:
     def __init__(self, env, name, input_size, action_set, alpha=alpha, gamma=gamma):
+        self.model_filename = "models/race_car_" + name + ".h5"
+
         self.input_size = input_size
         self.action_set = action_set
         self.env = env
@@ -58,11 +60,13 @@ class BaseModel:
         else:
             return eps_select(network_output, action_selection_parameter), network_output
 
+    def save(self):
+        self.model.save(self.model_filename)
+
     def create_nn(self, name, input_size):
-        model_filename = "models/race_car_" + name + ".h5"
-        if path.exists(model_filename):
+        if path.exists(self.model_filename):
             print("Loading existing model")
-            return load_model(model_filename)
+            return load_model(self.model_filename)
 
         model = Sequential()
         model.add(Dense(512, init='lecun_uniform', input_shape=(input_size,)))  # 7x7 + 3.  or 14x14 + 3

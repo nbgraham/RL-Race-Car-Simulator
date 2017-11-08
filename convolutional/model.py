@@ -11,25 +11,25 @@ from convolutional.hyperparameters import alpha, gamma
 
 class Model(BaseModel):
     def create_nn(self, name, input_shape):
-        model_filename = "race_car_" + name + "h5"
+        model_filename = "models/race_car_" + name + ".h5"
         if os.path.exists(model_filename):
             print("Loading existing model")
             return load_model(model_filename)
 
         print("Input shape", input_shape)
         model = Sequential()
-        model.add(Conv2D(32, kernel_size=(4, 4), strides=(2, 2),
+        model.add(Conv2D(32, kernel_size=(8, 8), strides=(2, 2),
                          activation='relu',
                          input_shape=input_shape))
         model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
-        model.add(Conv2D(16, kernel_size=(4, 4), strides=(2, 2),
+        model.add(Conv2D(16, kernel_size=(3, 3), strides=(2, 2),
                          activation='relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
 
         model.add(Flatten())
-        model.add(Dense(512, activation='relu'))
-        model.add(Dense(len(self.action_set), activation='softmax'))
+        model.add(Dense(256, activation='relu'))
+        model.add(Dense(len(self.action_set), activation='linear'))
 
         adamax = Adamax()  # Adamax(lr=0.001)
         model.compile(loss='mse', optimizer=adamax)
@@ -43,16 +43,16 @@ class Model(BaseModel):
         action = self.action_set[max_index]
         change = 0
 
-        if self.prev_state is not None and self.prev_qvals is not None and self.prev_argmax is not None:
+        if self.prev_state is not None and self.prev_net_output is not None and self.prev_action_index is not None:
             G = reward + gamma * np.max(network_output)
-            y = self.prev_qvals[:]
-            change = G - y[self.prev_argmax]
-            y[self.prev_argmax] += alpha * change
+            y = self.prev_net_output[:]
+            change = G - y[self.prev_action_index]
+            y[self.prev_action_index] += alpha * change
             self.update(self.prev_state, y)
 
         self.prev_state = state
-        self.prev_qvals = network_output
-        self.prev_argmax = max_index
+        self.prev_net_output = network_output
+        self.prev_action_index = max_index
 
         loss = change ** 2
         return action, loss
@@ -62,3 +62,6 @@ class Model(BaseModel):
 
     def update(self, state, expected_output):
         self.model.fit(state.reshape(-1, 90, 90, 1), np.array(expected_output).reshape(-1, 11), epochs=1, verbose=0)
+
+    def get_action_selection_parameter(cur_episode, total_episodes):
+        return max(.01, min(.99, (total_episodes**.3 / np.sqrt(cur_episode + 25) - 0.1)/5))

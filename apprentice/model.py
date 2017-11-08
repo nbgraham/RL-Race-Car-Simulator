@@ -8,44 +8,21 @@ import random
 import math
 
 from base.model import BaseModel
-from pg.hyperparameters import gamma, action_selection_coeff, alpha
-from action_selection import softmax_select, eps_select
+from apprentice.hyperparameters import gamma, encourage_strength, alpha
 
 
 class Model(BaseModel):
     def __init__(self, env, name, input_size, action_set):
         BaseModel.__init__(self, env, name, input_size, action_set, alpha=alpha, gamma=gamma)
-        self.last_ten_rewards = [0]*10
 
-    def sample_action(self, state, action_selection_parameter, softmax=False):
+    def encourage_action(self, state, action_index):
         probs = self.predict(state)
 
-        probs = probs / np.sum(probs)
-
-        if softmax:
-            return softmax_select(probs, action_selection_parameter), probs
-        else:
-            return eps_select(probs, action_selection_parameter), probs
-
-    def get_action(self, state, eps, reward):
-        self.last_ten_rewards = self.last_ten_rewards[1:]
-        self.last_ten_rewards.append(reward)
-
-        arg_max_probs, probs = self.sample_action(state, eps)
-
-        action = self.action_set[arg_max_probs]
         change = 0
-        
         if self.prev_state is not None and self.prev_net_output is not None and self.prev_action_index is not None:
             other_prob = 0
-            choice_prob = 0
-            if np.sum(self.last_ten_rewards) < 0:
-                # print("Discourage")
-                uniform_prob = 1/(len(self.action_set) - 1)
-                other_prob = uniform_prob
-            else:
-                # print("Encourage")
-                choice_prob = 1
+            choice_prob = 1
+
             G_array = [other_prob]*len(self.action_set)
             G_array[self.prev_action_index] = choice_prob
             G = np.array(G_array)
@@ -53,14 +30,15 @@ class Model(BaseModel):
             y = self.prev_net_output[:]
             change = G - y[self.prev_action_index]
             y += alpha*change
-            self.update(self.prev_state, y)
+            for i in range (encourage_strength):
+                self.update(self.prev_state, y)
 
         self.prev_state = state
         self.prev_net_output = probs
-        self.prev_action_index = arg_max_probs
+        self.prev_action_index = action_index
 
         loss = np.sum(change**2)
-        return action, loss
+        return loss
 
     # softmax output layer activation for prob
     def create_nn(self, name, input_size):
